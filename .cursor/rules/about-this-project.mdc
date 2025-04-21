@@ -1,0 +1,168 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# 📘 About This Project
+
+This project is a modern multivendor marketplace application built with the following technologies:
+
+- **Next.js** (App Router)
+- **Tailwind CSS** with **shadcn/ui**
+- **Supabase** (Database, Auth, Storage)
+- **TanStack React Query**
+- **Zustand** (state management)
+- **Zod** + **React Hook Form** (form validation)
+- **Mapbox** (geolocation, radius filtering)
+- **Resend + React Email** (custom email flows)
+
+It is a tutorial-friendly project inspired by platforms like **Jiji**, with additional features such as embedded maps, live chat, service filters, and admin tools.
+
+---
+
+## 🎯 Project Goals
+
+- Teach how to build a scalable, real-world app
+- Demonstrate modern fullstack architecture
+- Emphasize modular code structure and clean UX
+- Support both mobile and desktop experiences
+
+---
+
+## 🧑‍🎨 UI & UX Guidelines
+
+- Clean, modern, smooth, and consistent UI design
+- Fully responsive layouts
+- Intuitive and user-friendly navigation
+- Use brand colors creatively—include gradients, shades, and combinations to enhance aesthetics
+- Prioritize accessibility and visual clarity
+
+---
+
+## 🧱 Component Architecture
+
+- Follow the **Atomic Design System**
+- Break down UI into:
+  - **Atoms** (Buttons, Inputs, Icons) // make use of shadcn components
+  - **Molecules** (Form groups, Cards, Media blocks) // make use of shadcn components where available
+  - **Organisms** (Navigation, Listings Grid, Chat Interface)
+  - **Templates & Pages**
+- Prioritize smaller, reusable, and generic components
+- Use modern best practices for file and folder structuring
+
+---
+
+## Brand Colors (Create beautiful brand colors from this)
+- #4a51e5
+- #ff7b24
+- #ffb126
+- #2fd48f
+- #85e56f
+
+## 📦 Key Modules Overview
+
+### 1. **Authentication Module**
+
+- Supabase email OTP sign-up flow
+- Signup as buyer or seller
+- Admin invite-only access
+- Password reset and change flows
+- First-login tracking
+
+### 2. **Seller Onboarding & Management**
+
+- Seller profile includes business info, services, service modes (home, delivery, etc.)
+- Must be approved before listing
+- Generic service structure for all business types
+
+### 3. **Listings (Ads) Module**
+
+- Add/edit/delete listings with categories, tags, service modes
+- Images, location, and descriptions
+- Public listing view + filters and search
+- Admin control over listing approval or deactivation
+
+### 4. **Messaging / Chat System**
+
+- In-app direct messaging between buyers and sellers
+- Real-time-like UI (inspired by modern chat apps)
+- Threads per listing/seller-buyer interaction
+
+### 5. **Search & Filters Module**
+
+- Filter listings by category, tags, price range, service mode
+- Sort by newest, price, or proximity
+- Map-based radius filter
+
+### 6. **Reviews & Ratings**
+
+- Buyers can review sellers
+- Sellers can reply to reviews
+- Admin moderation for flagged reviews
+
+### 7. **Map & Location Services**
+
+- Mapbox integration for geolocation
+- Get directions to listing/service
+- Radius-based filtering and service discovery
+
+### 8. **Notifications & Alerts**
+
+- In-app + Email notifications
+- React Email templates sent via API routes using Resend
+- Notify users of messages, reviews, admin actions
+
+### 9. **Admin Module**
+
+- User, listing, review moderation
+- Approve sellers
+- Platform analytics and system settings
+- Send alerts and manage categories/service types
+
+---
+
+## 🧪 Development Principles
+
+- Strong type safety with TypeScript
+- Fully modular file structure
+- Local-first dev with real-time syncing to Supabase
+- API routes for relevant custom logic
+- DRY and reusable component design
+
+---
+
+## 📂 Folder Structure (Example)
+
+```
+/app
+  /auth
+  /dashboard
+  /listings
+  /messages
+  /admin
+  /profile
+/lib
+  /supabase
+  /validation
+  /hooks
+/components
+  /forms
+  /ui
+  /maps
+  /chat
+```
+
+---
+
+## ✅ Summary Guidelines
+
+This file acts as the source of truth for Cursor AI code generation.
+
+- Always adhere to the modular boundaries of each feature
+- Refer to respective module documents when modifying or extending logic
+- Use Resend for email actions, not Supabase default
+- Supabase Auth + OTP + custom admin creation rules are enforced
+- All listing, review, seller approval actions must respect roles and statuses
+- Maintain UI quality, responsive design, and reusable atomic components
+
+---
