@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import {
   Form,
   FormControl,
@@ -10,8 +10,8 @@ import {
   FormMessage,
 } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { signInUser } from '@/lib/auth';
 import { loginSchema, type LoginFormValues } from '@/lib/auth-schema';
+import { signInUser } from '@/services/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -91,9 +91,9 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <PrimaryButton type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Signing in...' : 'Sign in'}
-          </Button>
+          </PrimaryButton>
         </div>
       </form>
     </Form>

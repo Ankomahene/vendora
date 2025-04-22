@@ -1,24 +1,17 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-// Define public routes that don't require authentication
-const publicRoutes = [
-  '/',
-  '/auth/login',
-  '/auth/signup',
-  '/auth/verify-otp',
-  '/auth/reset-password',
+// Define route patterns
+const PROTECTED_ROUTES = ['/dashboard', '/admin'];
+const AUTH_ROUTES = '/auth';
+const ALLOWED_AUTH_ROUTES_FOR_LOGGED_IN = [
   '/auth/new-password',
+  '/auth/become-seller',
 ];
 
-// Define role-specific routes
-const sellerRoutes = ['/seller', '/listings/create', '/listings/edit'];
-const adminRoutes = ['/admin'];
-
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let response = NextResponse.next({ request });
+  const pathname = request.nextUrl.pathname;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,80 +25,71 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
+          response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            response.cookies.set(name, value, options)
           );
         },
       },
     }
   );
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
-
+  // Get user session (DO NOT REMOVE OR ADD CODE BEFORE THIS)
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
-  const isPublicRoute = publicRoutes.some(
-    (route) => pathname === route || pathname.startsWith(route)
+  // Check if route requires authentication
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
+    pathname.startsWith(route)
   );
+  const isAuthRoute = pathname.startsWith(AUTH_ROUTES);
+  const isAllowedAuthRoute =
+    ALLOWED_AUTH_ROUTES_FOR_LOGGED_IN.includes(pathname);
 
-  // If no user and trying to access a protected route, redirect to login
-  if (!user && !isPublicRoute) {
-    return NextResponse.redirect(new URL('/auth/login', request.url));
+  // Handle unauthenticated users
+  if (!user) {
+    // Redirect to login if trying to access protected routes
+    if (isProtectedRoute) {
+      return NextResponse.redirect(new URL('/auth/login', request.url));
+    }
+    // Allow unauthenticated access to auth routes and public routes
+    return response;
   }
 
-  // If user exists, get their profile to check roles and permissions
-  if (user) {
-    //Redirect to dashboard if already logged in
+  // For authenticated users, fetch their profile for role-based redirects
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, seller_status, is_admin, first_login')
+    .eq('id', user.id)
+    .single();
 
-    if (request.nextUrl.pathname.startsWith('/auth')) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, seller_status, is_admin, first_login')
-      .eq('id', user.id)
-      .single();
-
-    // Redirect sellers trying to access seller routes if not approved
+  // Handle authenticated users
+  if (profile) {
+    // First-time admin login should be forced to reset password
     if (
-      profile &&
-      sellerRoutes.some((route) => pathname.startsWith(route)) &&
-      profile.role === 'seller' &&
-      profile.seller_status !== 'approved'
-    ) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-
-    // Redirect non-admins trying to access admin routes
-    if (
-      profile &&
-      adminRoutes.some((route) => pathname.startsWith(route)) &&
-      !profile.is_admin
-    ) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-
-    // Redirect first-time admin login to password change
-    if (
-      profile &&
       profile.is_admin &&
       profile.first_login === true &&
       pathname !== '/auth/new-password'
     ) {
       return NextResponse.redirect(new URL('/auth/new-password', request.url));
     }
+
+    // // Redirect admins to admin dashboard
+    if (profile.is_admin && !pathname.startsWith('/admin')) {
+      return NextResponse.redirect(new URL('/admin', request.url));
+    }
+
+    // Prevent non-admins from accessing admin routes
+    if (!profile.is_admin && pathname.startsWith('/admin')) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    // Redirect authenticated users away from auth pages (with exceptions)
+    if (isAuthRoute && !isAllowedAuthRoute) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
   }
 
-  return supabaseResponse;
+  return response;
 }

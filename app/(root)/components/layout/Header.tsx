@@ -1,25 +1,19 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { Moon, Sun, Menu, X, LogOut } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
 import { Logo } from '@/components/Logo';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { createClient } from '@/lib/supabase/client';
-import { signOutUser } from '@/lib/auth';
-import { usePathname, useRouter } from 'next/navigation';
-import { User } from '@supabase/supabase-js';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { UserMenu } from '@/components/UserMenu';
+import { useProfileServices } from '@/lib/hooks';
+import { cn } from '@/lib/utils';
+import { Menu, X } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export function Header() {
-  const { theme, setTheme } = useTheme();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
-  const pathname = usePathname();
+  const { user, isLoading } = useProfileServices();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,33 +24,12 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    async function getUser() {
-      setIsLoading(true);
-      const supabase = createClient();
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-      setIsLoading(false);
-    }
-
-    getUser();
-  }, []);
-
-  const handleSignOut = async () => {
-    try {
-      await signOutUser();
-      router.refresh();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
   return (
     <header
       className={cn(
         'fixed top-0 w-full z-50 transition-all duration-300',
         isScrolled
-          ? 'bg-white dark:bg-zinc-900 shadow-md py-4'
+          ? 'bg-white dark:bg-zinc-900 shadow-md py-2'
           : 'bg-transparent py-6'
       )}
     >
@@ -84,29 +57,10 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-          </Button>
-
           {!isLoading && (
             <>
               {user ? (
-                <div className="flex items-center space-x-2">
-                  {pathname !== '/dashboard' && (
-                    <>
-                      <Link href="/dashboard">Dashboard</Link>
-                      <Separator orientation="vertical" className="h-4 w-0.5" />
-                    </>
-                  )}
-                  <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                    <LogOut size={18} className="mr-2" />
-                    Sign out
-                  </Button>
-                </div>
+                <UserMenu />
               ) : (
                 <div className="flex items-center space-x-2">
                   <Link href="/auth/login">Log in</Link>
@@ -116,17 +70,13 @@ export function Header() {
               )}
             </>
           )}
+
+          <ThemeToggle />
         </div>
 
         {/* Mobile Menu Button */}
         <div className="flex md:hidden items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-          </Button>
+          <ThemeToggle />
           <Button
             variant="ghost"
             size="icon"
@@ -166,20 +116,7 @@ export function Header() {
             {!isLoading && (
               <>
                 {user ? (
-                  <div className="pt-4 border-t border-gray-100 dark:border-zinc-800 flex flex-col space-y-2">
-                    <Link href="/dashboard">
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="w-full justify-start"
-                      >
-                        Dashboard
-                      </Button>
-                    </Link>
-                    <Button variant="default" size="sm" onClick={handleSignOut}>
-                      Sign out
-                    </Button>
-                  </div>
+                  <UserMenu />
                 ) : (
                   <div className="pt-4 border-t border-gray-100 dark:border-zinc-800 flex space-x-4">
                     <Link href="/auth/login">

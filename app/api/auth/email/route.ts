@@ -20,44 +20,56 @@ export async function POST(request: NextRequest) {
 
     switch (type) {
       case 'verification':
-        const supabase = createAdminClient();
-        let res;
+        try {
+          const supabase = createAdminClient();
+          let res;
 
-        if (isPasswordReset) {
-          res = await supabase.auth.admin.generateLink({
-            type: 'recovery',
-            email,
-          });
-        } else {
-          res = await supabase.auth.admin.generateLink({
-            type: 'signup',
-            email,
-            password,
-            options: {
-              data: {
-                full_name,
-                role,
+          if (isPasswordReset) {
+            res = await supabase.auth.admin.generateLink({
+              type: 'recovery',
+              email,
+            });
+          } else {
+            res = await supabase.auth.admin.generateLink({
+              type: 'signup',
+              email,
+              password,
+              options: {
+                data: {
+                  full_name,
+                  role,
+                },
               },
-            },
-          });
+            });
+
+            if (res.error) {
+              throw new Error(res.error.message);
+            }
+          }
+
+          if (res.data.properties?.email_otp) {
+            data = await resend.emails.send({
+              from: 'auth@mrshadrack.com',
+              to: email,
+              subject: isPasswordReset
+                ? 'Reset your password'
+                : 'Verify your email address',
+              react: VerificationEmail({
+                otp: res.data.properties?.email_otp,
+                isPasswordReset: !!isPasswordReset,
+              }),
+            });
+          } else {
+            throw new Error(res.error?.message);
+          }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+          return NextResponse.json(
+            { data: null, error: { message: error.message, code: error.code } },
+            { status: 400 }
+          );
         }
 
-        if (res.data.properties?.email_otp) {
-          data = await resend.emails.send({
-            from: 'auth@mrshadrack.com',
-            to: email,
-            subject: isPasswordReset
-              ? 'Reset your password'
-              : 'Verify your email address',
-            react: VerificationEmail({
-              otp: res.data.properties?.email_otp,
-              isPasswordReset: !!isPasswordReset,
-            }),
-          });
-        } else {
-          console.log(res);
-          return NextResponse.json({ data: null, error: res.error });
-        }
         break;
 
       case 'welcome':

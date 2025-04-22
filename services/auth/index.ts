@@ -1,64 +1,54 @@
+import { createClient } from '@/lib/supabase/client';
 import {
   LoginFormValues,
   OtpFormValues,
   ResetPasswordFormValues,
   SignupFormValues,
-} from './auth-schema';
-import { createClient } from './supabase/client';
+} from '@/lib/auth-schema';
 import {
   clearSessionData,
   getSessionData,
   storeSessionData,
-} from './sessionStorage';
-
-export type Role = 'buyer' | 'seller' | 'admin';
-export type SellerStatus = 'pending' | 'approved' | 'rejected';
-
-export type UserProfile = {
-  id: string;
-  full_name: string;
-  email: string;
-  phone?: string;
-  avatar_url?: string;
-  role: Role;
-  seller_status?: SellerStatus;
-  is_admin: boolean;
-  first_login: boolean;
-  created_at: string;
-  updated_at: string;
-};
+} from '@/lib/sessionStorage';
 
 // Function to sign up user
 export async function signUpUser(data: SignupFormValues) {
-  const response = await fetch('/api/auth/email', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      type: 'verification',
+  try {
+    const response = await fetch('/api/auth/email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        type: 'verification',
+        email: data.email,
+        password: data.password,
+        full_name: data.full_name,
+        role: data.role,
+        isPasswordReset: false,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error.message || 'Failed to send verification email'
+      );
+    }
+
+    // Store email and role in session storage
+    storeSessionData({
       email: data.email,
-      password: data.password,
-      full_name: data.full_name,
       role: data.role,
-      isPasswordReset: false,
-    }),
-  });
+      full_name: data.full_name,
+    });
 
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.error || 'Failed to send verification email');
+    return result;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    throw new Error(error.message || 'Failed to send verification email');
   }
-
-  // Store email and role in session storage
-  storeSessionData({
-    email: data.email,
-    role: data.role,
-    full_name: data.full_name,
-  });
-
-  return result;
 }
 
 // Function to verify OTP
@@ -185,8 +175,8 @@ export async function updatePassword(password: string) {
   return true;
 }
 
-// Function to get current user profile
-export async function getUserProfile() {
+// Function to become a seller
+export async function becomeSeller() {
   const supabase = createClient();
 
   const {
@@ -195,39 +185,41 @@ export async function getUserProfile() {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return null;
+    throw new Error('Unauthorized');
   }
 
+  // Get the profile to check if user is already a seller
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('*')
+    .select('role')
     .eq('id', user.id)
     .single();
 
-  if (profileError) {
-    return null;
+  if (profileError || !profile) {
+    throw new Error('Profile not found');
   }
 
-  return profile as UserProfile;
-}
+  if (profile.role === 'seller') {
+    throw new Error('User is already a seller');
+  }
 
-// Function to update user profile
-export async function updateUserProfile(
-  id: string,
-  data: Partial<UserProfile>
-) {
-  const supabase = createClient();
+  if (profile.role === 'admin') {
+    throw new Error('Admin cannot become a seller');
+  }
 
-  const { data: profile, error } = await supabase
+  // Update profile to seller
+  const { error: updateError } = await supabase
     .from('profiles')
-    .update(data)
-    .eq('id', id)
-    .select()
-    .single();
+    .update({
+      role: 'seller',
+      first_login: true, // Force first login to prompt for seller details
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', user.id);
 
-  if (error) {
-    throw new Error(error.message);
+  if (updateError) {
+    throw new Error('Failed to update profile');
   }
 
-  return profile as UserProfile;
+  return { success: true, message: 'User is now a seller' };
 }

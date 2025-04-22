@@ -1,7 +1,21 @@
+import { DashboardStatsSection } from '@/app/dashboard/components/DashboardStats';
+import { MapPreview } from '@/app/dashboard/components/MapPreview';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
+import { getDashboardStats, getUserProfile } from '@/services/profile';
+import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import { Suspense } from 'react';
+import { BuyerCard } from './components/BuyerCard';
+import { SellerCard } from './components/SellerCard';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -15,61 +29,113 @@ export default async function DashboardPage() {
     redirect('/auth/login');
   }
 
-  return (
-    <div className="container flex flex-col min-h-screen py-8">
-      <div className="flex-1 py-12">
-        <div className="max-w-2xl mx-auto space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold">Welcome, Fullname</h2>
-            <p className="text-muted-foreground">
-              This is your dashboard. You can view your account information
-              here.
-            </p>
-          </div>
+  const profile = await getUserProfile(user.id);
+  if (!profile) {
+    notFound();
+  }
 
-          <div className="bg-card rounded-lg border p-6 shadow-sm">
-            <div className="space-y-4">
-              <div className="grid gap-1">
-                <h3 className="font-medium">Email</h3>
-                <p>test@example.com</p>
-              </div>
-              <div className="grid gap-1">
-                <h3 className="font-medium">Role</h3>
-                <p className="capitalize">seller</p>
-              </div>
-              {/* {profile?.role === 'seller' && (
-                <div className="grid gap-1">
-                  <h3 className="font-medium">Seller Status</h3>
-                  <div>
-                    <span
-                      className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
-                        profile?.seller_status === 'approved'
-                          ? 'bg-success/20 text-success'
-                          : profile?.seller_status === 'rejected'
-                          ? 'bg-destructive/20 text-destructive'
-                          : 'bg-warning/20 text-warning'
-                      }`}
-                    >
-                      {profile?.seller_status || 'pending'}
-                    </span>
+  // If user is a seller and first login is true, redirect to seller onboarding
+  if (profile.role === 'seller' && profile.first_login) {
+    redirect('/dashboard/seller-onboarding');
+  }
+
+  // Get dashboard stats
+  const stats = await getDashboardStats();
+
+  return (
+    <>
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Welcome, {profile.full_name || 'User'}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Here&apos;s what&apos;s happening with your account today.
+          </p>
+        </div>
+
+        <Suspense fallback={<div>Loading stats...</div>}>
+          <DashboardStatsSection
+            stats={stats}
+            isSeller={profile.role === 'seller'}
+          />
+        </Suspense>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 space-y-6">
+            {profile.role === 'seller' && <SellerCard profile={profile} />}
+
+            {profile.role === 'buyer' && <BuyerCard />}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Messages</CardTitle>
+                <CardDescription>
+                  Your recent conversations with buyers and sellers
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border overflow-hidden">
+                  {/* Message items would go here in a real app */}
+                  <div className="p-4 flex justify-center items-center text-muted-foreground">
+                    <p className="text-sm">No recent messages</p>
                   </div>
                 </div>
-              )} */}
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Button asChild>
-              <Link href="/">Go to Home</Link>
-            </Button>
-            {/* {profile?.role === 'buyer' && ( */}
-            <Button variant="outline" asChild>
-              <Link href="/auth/become-seller">Become a Seller</Link>
-            </Button>
-            {/* )} */}
+          <div className="space-y-6">
+            {profile.role === 'seller' &&
+              profile?.seller_status === 'approved' && (
+                <MapPreview
+                  location={profile.seller_details.location}
+                  isInteractive={true}
+                />
+              )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="w-full justify-between"
+                  >
+                    <Link href="/search">
+                      Browse Services
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="w-full justify-between"
+                  >
+                    <Link href="/dashboard/favorites">
+                      Saved Favorites
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="w-full justify-between"
+                  >
+                    <Link href="/dashboard/settings">
+                      Account Settings
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -10,8 +11,8 @@ import {
   FormMessage,
 } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { signUpUser } from '@/lib/auth';
 import { signupSchema, type SignupFormValues } from '@/lib/auth-schema';
+import { signUpUser } from '@/services/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -38,7 +39,8 @@ export default function SignupForm() {
       await signUpUser(data);
       toast.success('Check your email for a verification code');
       router.push(`/auth/verify-otp`);
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error(error);
       toast.error(error instanceof Error ? error.message : 'Failed to sign up');
     } finally {
@@ -153,9 +155,9 @@ export default function SignupForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <PrimaryButton type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Creating account...' : 'Create account'}
-          </Button>
+          </PrimaryButton>
         </div>
       </form>
     </Form>

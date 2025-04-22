@@ -1,8 +1,8 @@
-import { HeroSection } from '@/app/components/hero/HeroSection';
-import { FeaturedSection } from '@/app/components/featured/FeaturedSection';
-import { CategorySection } from '@/app/components/featured/CategorySection';
-import { TestimonialSection } from '@/app/components/featured/TestimonialSection';
-import { CTASection } from '@/app/components/layout/CTASection';
+import { HeroSection } from './components/hero/HeroSection';
+import { FeaturedSection } from './components/featured/FeaturedSection';
+import { CategorySection } from './components/featured/CategorySection';
+import { TestimonialSection } from './components/featured/TestimonialSection';
+import { CTASection } from './components/layout/CTASection';
 
 export default function Home() {
   return (

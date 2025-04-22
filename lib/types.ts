@@ -1,5 +1,6 @@
 export type SearchType = 'sellers' | 'listings' | 'categories';
 
+// used for mocked data. do not use this
 export interface Seller {
   id: string;
   name: string;
@@ -13,6 +14,7 @@ export interface Seller {
   listings: Listing[];
 }
 
+// used for mocked data. do not use this
 export interface Listing {
   id: string;
   title: string;
@@ -29,6 +31,7 @@ export interface Listing {
   tags: string[];
 }
 
+// used for mocked data. do not use this
 export interface Category {
   id: string;
   name: string;
@@ -37,6 +40,7 @@ export interface Category {
   description: string;
 }
 
+// used for mocked data. do not use this
 export interface SearchFilters {
   priceRange: [number, number];
   category: string;
@@ -44,4 +48,50 @@ export interface SearchFilters {
   distance: number;
   location: string;
   sortBy: 'relevance' | 'proximity' | 'newest' | 'price_asc' | 'price_desc';
+}
+
+export type UserRole = 'buyer' | 'seller' | 'admin';
+export type SellerStatus = 'pending' | 'approved' | 'rejected';
+
+export interface ServiceMode {
+  type: 'delivery' | 'home_service' | 'in_store';
+  enabled: boolean;
+}
+
+export interface SellerDetails {
+  business_name: string;
+  business_category: string;
+  description: string;
+  contact_phone: string;
+  services: string[];
+  service_modes: ServiceMode[];
+  location: {
+    lat: number;
+    lng: number;
+    address: string;
+  };
+  images: string[];
+}
+
+export type UserProfile = {
+  id: string;
+  full_name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  avatar_url?: string;
+  role: UserRole;
+  seller_status?: SellerStatus;
+  is_admin: boolean;
+  first_login: boolean;
+  created_at: string;
+  updated_at: string;
+  seller_details: SellerDetails;
+};
+
+export interface DashboardStats {
+  totalListings: number;
+  totalViews: number;
+  totalMessages: number;
+  pendingReviews: number;
 }

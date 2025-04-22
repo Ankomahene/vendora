@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import {
   Form,
   FormControl,
@@ -10,9 +10,9 @@ import {
   FormMessage,
 } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { verifyOtp } from '@/lib/auth';
 import { otpSchema, type OtpFormValues } from '@/lib/auth-schema';
 import { getSessionData } from '@/lib/sessionStorage';
+import { verifyOtp } from '@/services/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -122,9 +122,9 @@ export default function VerifyOtpForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <PrimaryButton type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Verifying...' : 'Verify Email'}
-          </Button>
+          </PrimaryButton>
         </div>
       </form>
     </Form>

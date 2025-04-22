@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import {
   Form,
   FormControl,
@@ -10,11 +10,11 @@ import {
   FormMessage,
 } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { updatePassword } from '@/lib/auth';
 import {
   newPasswordSchema,
   type NewPasswordFormValues,
 } from '@/lib/auth-schema';
+import { updatePassword } from '@/services/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -96,9 +96,9 @@ export default function NewPasswordForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <PrimaryButton type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Updating password...' : 'Update password'}
-          </Button>
+          </PrimaryButton>
         </div>
       </form>
     </Form>

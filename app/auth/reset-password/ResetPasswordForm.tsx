@@ -1,17 +1,16 @@
 'use client';
 
-import { requestPasswordReset } from '@/lib/auth';
 import {
   resetPasswordSchema,
   type ResetPasswordFormValues,
 } from '@/lib/auth-schema';
+import { requestPasswordReset } from '@/services/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-
-import { Button } from '@/components/ui/button';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import {
   Form,
   FormControl,
@@ -76,9 +75,9 @@ export default function ResetPasswordForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <PrimaryButton type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Sending instructions...' : 'Send instructions'}
-          </Button>
+          </PrimaryButton>
         </div>
       </form>
     </Form>
