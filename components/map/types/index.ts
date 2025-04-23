@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface Location {
   name?: string;
   lng: number;
@@ -30,4 +31,65 @@ export interface MapViewProps {
 export interface SearchBarProps {
   onSearchResult?: (result: SearchResult) => void;
   className?: string;
+}
+
+// Google Maps Types
+export interface GoogleAutocomplete {
+  addListener: (event: string, callback: () => void) => void;
+  getPlace: () => GooglePlace;
+}
+
+export interface GooglePlace {
+  place_id?: string;
+  formatted_address: string;
+  name?: string;
+  geometry: {
+    location: {
+      lat: () => number;
+      lng: () => number;
+    };
+  };
+}
+
+export interface GoogleAutoCompleteService {
+  getPlacePredictions: (
+    request: { input: string; types: string[] },
+    callback: (
+      predictions: Array<{ place_id: string; description: string }> | null,
+      status: any
+    ) => void
+  ) => void;
+}
+
+export interface GooglePlacesService {
+  getDetails: (
+    request: { placeId: string; fields: string[] },
+    callback: (place: GooglePlace | null, status: any) => void
+  ) => void;
+}
+
+// Extend Window interface
+declare global {
+  interface Window {
+    google: {
+      maps: {
+        places: {
+          Autocomplete: new (
+            input: HTMLInputElement,
+            options?: AutocompleteOptions
+          ) => GoogleAutocomplete;
+          AutocompleteService: new () => GoogleAutoCompleteService;
+          PlacesService: new (
+            attributionNode: HTMLElement
+          ) => GooglePlacesService;
+        };
+      };
+    };
+    initGoogleAutocomplete: () => void;
+  }
+}
+
+export interface AutocompleteOptions {
+  fields: string[];
+  types: string[];
 }

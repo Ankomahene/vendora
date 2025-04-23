@@ -68,6 +68,7 @@ export function LocationDetails({ location, className }: LocationDetailsProps) {
               Address Details
             </div>
             <div className="space-y-1 rounded-md bg-muted p-2 text-sm">
+              {location.name && <p className="font-medium">{location.name}</p>}
               {addressParts.map((part, index) => (
                 <div key={index} className={index === 0 ? 'font-medium' : ''}>
                   {part}

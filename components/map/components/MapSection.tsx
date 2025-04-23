@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,28 +8,53 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { useProfileServices } from '@/lib/hooks';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { DEFAULT_MAP_VIEW_STATE } from '../constants';
+import { Location, MapViewState, SearchResult } from '../types';
 import { LocationDetails } from './LocationDetails';
 import { MapView } from './MapView';
-import { SearchBar } from './SearchBar';
-import { useProfileServices } from '@/lib/hooks';
 import { NoLocationPlaceholder } from './NoLocationPlaceholder';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { MapPin } from 'lucide-react';
-import { Location, SearchResult } from '../types';
-import { DEFAULT_MAP_VIEW_STATE } from '../constants';
+import { SearchBar } from './SearchBar';
+import { GoogleSearchBar } from './GoogleSearchBar';
+import { Map as MapIcon } from 'lucide-react';
 
 export default function MapSection() {
   const { user, updateProfile } = useProfileServices();
   const [showMap, setShowMap] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [useGoogleSearch, setUseGoogleSearch] = useState(false);
 
+  // Initialize with user's location if available
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
-    user?.seller_details.location || null
+    user?.seller_details?.location || null
   );
-  const [viewState, setViewState] = useState(DEFAULT_MAP_VIEW_STATE);
+
+  // Initialize view state based on user's location or default
+  const [viewState, setViewState] = useState<MapViewState>(() => {
+    if (user?.seller_details?.location) {
+      return {
+        lng: user.seller_details.location.lng,
+        lat: user.seller_details.location.lat,
+        zoom: 14,
+      };
+    }
+    return DEFAULT_MAP_VIEW_STATE;
+  });
+
+  // Update view state when user data changes
+  useEffect(() => {
+    if (user?.seller_details?.location) {
+      setSelectedLocation(user.seller_details.location);
+      setViewState({
+        lng: user.seller_details.location.lng,
+        lat: user.seller_details.location.lat,
+        zoom: 14,
+      });
+    }
+  }, [user]);
 
   const handleSearchResult = (result: SearchResult) => {
     setSelectedLocation({
@@ -36,6 +62,13 @@ export default function MapSection() {
       lng: result.longitude,
       lat: result.latitude,
       address: result.address,
+    });
+
+    // Update view state with zoom level 14 when selecting a location
+    setViewState({
+      lng: result.longitude,
+      lat: result.latitude,
+      zoom: 14,
     });
   };
 
@@ -85,12 +118,29 @@ export default function MapSection() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {user?.seller_details.location || showMap ? (
+        {user?.seller_details?.location || showMap ? (
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="col-span-4 lg:col-span-2">
               <div className="relative space-y-4">
                 <Card className="p-4 shadow-md">
-                  <SearchBar onSearchResult={handleSearchResult} />
+                  <div className="flex flex-col space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setUseGoogleSearch(!useGoogleSearch)}
+                        className="flex items-center gap-2"
+                      >
+                        <MapIcon className="h-4 w-4" />
+                        {useGoogleSearch ? 'Using Google Maps' : 'Using Mapbox'}
+                      </Button>
+                    </div>
+                    {useGoogleSearch ? (
+                      <GoogleSearchBar onSearchResult={handleSearchResult} />
+                    ) : (
+                      <SearchBar onSearchResult={handleSearchResult} />
+                    )}
+                  </div>
                 </Card>
 
                 <div className="h-[300px] lg:h-[400px] overflow-hidden rounded-lg shadow-md relative">
@@ -100,17 +150,6 @@ export default function MapSection() {
                     selectedLocation={selectedLocation}
                     onLocationSelect={handleLocationSelect}
                   />
-
-                  <div className="absolute top-3 right-3 z-10">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="bg-white/80 hover:bg-white shadow-md text-black cursor-pointer"
-                    >
-                      <MapPin className="h-4 w-4 mr-2 text-primary" />
-                      My Location
-                    </Button>
-                  </div>
                 </div>
               </div>
             </div>

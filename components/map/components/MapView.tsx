@@ -7,6 +7,7 @@ import Map, {
   NavigationControl,
   GeolocateControl,
   ViewStateChangeEvent,
+  FullscreenControl,
 } from 'react-map-gl/mapbox';
 import { cn } from '@/lib/utils';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -19,6 +20,7 @@ import {
   MARKER_ANIMATION_DURATION,
 } from '../constants';
 import { reverseGeocode } from '../utils';
+import { MyLocationButton } from './MyLocationButton';
 
 export function MapView({
   initialViewState = DEFAULT_MAP_VIEW_STATE,
@@ -30,14 +32,29 @@ export function MapView({
   const mapRef = useRef<any>(null);
   const [viewState, setViewState] = useState(initialViewState);
   const [showMarkerAnimation, setShowMarkerAnimation] = useState(false);
+  const isInitialMount = useRef(true);
 
-  // Update view state when selected location changes
+  // Handle initial view state
   useEffect(() => {
-    if (selectedLocation) {
-      setViewState({
-        lng: selectedLocation.lng,
-        lat: selectedLocation.lat,
+    if (isInitialMount.current && mapRef.current) {
+      mapRef.current.flyTo({
+        longitude: initialViewState.lng,
+        latitude: initialViewState.lat,
+        zoom: initialViewState.zoom,
+        duration: 0,
+      });
+      isInitialMount.current = false;
+    }
+  }, [initialViewState]);
+
+  // Update view when selected location changes
+  useEffect(() => {
+    if (selectedLocation && !isInitialMount.current) {
+      mapRef.current?.flyTo({
+        center: [selectedLocation.lng, selectedLocation.lat],
         zoom: 14,
+        duration: 2000,
+        essential: true, // This animation is considered essential for the user experience
       });
 
       // Trigger animation
@@ -87,14 +104,21 @@ export function MapView({
       <Map
         ref={mapRef}
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
-        {...viewState}
+        longitude={viewState.lng}
+        latitude={viewState.lat}
+        zoom={viewState.zoom}
         onMove={handleViewStateChange}
         onClick={handleMapClick}
         mapStyle={DEFAULT_MAP_STYLE}
         style={{ width: '100%', height: '100%' }}
         attributionControl={false}
       >
-        <NavigationControl position="bottom-right" />
+        <NavigationControl
+          position="bottom-right"
+          showCompass={false}
+          visualizePitch
+          showZoom={false}
+        />
         <GeolocateControl
           position="bottom-right"
           positionOptions={{ enableHighAccuracy: true }}
@@ -133,6 +157,8 @@ export function MapView({
             </div>
           </Marker>
         )}
+        <FullscreenControl />
+        <MyLocationButton onLocationSelect={onLocationSelect} />
       </Map>
     </div>
   );
