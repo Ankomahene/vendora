@@ -58,6 +58,25 @@ export interface ServiceMode {
   enabled: boolean;
 }
 
+export interface PlaceComponents {
+  country?: string;
+  region?: string;
+  district?: string;
+  place?: string;
+  locality?: string;
+  neighborhood?: string;
+  address?: string;
+  postcode?: string;
+}
+
+export interface Location {
+  lat: number;
+  lng: number;
+  address?: string;
+  name?: string;
+  placeComponents?: PlaceComponents;
+}
+
 export interface SellerDetails {
   business_name: string;
   business_category: string;
@@ -65,11 +84,7 @@ export interface SellerDetails {
   contact_phone: string;
   services: string[];
   service_modes: ServiceMode[];
-  location: {
-    lat: number;
-    lng: number;
-    address: string;
-  };
+  location: Location;
   images: string[];
 }
 

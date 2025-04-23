@@ -1,22 +1,29 @@
 'use client';
 
-import { useEffect } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { useProfileServices } from '@/lib/hooks';
-import { SellerDetails } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useProfileServices } from '@/lib/hooks';
+import { SellerDetails } from '@/lib/types';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
-import { businessProfileSchema, BusinessProfileFormValues } from './types';
+import dynamic from 'next/dynamic';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import {
   BusinessInfoSection,
-  ServicesSection,
-  ServiceModesSection,
-  LocationSection,
   PhotosSection,
+  ServiceModesSection,
+  ServicesSection,
 } from './components';
+import { BusinessProfileFormValues, businessProfileSchema } from './types';
+
+const DynamicMapSection = dynamic(
+  () => import('@/components/map/components/MapSection'),
+  {
+    ssr: false,
+  }
+);
 
 export function BusinessProfileForm() {
   const {
@@ -129,11 +136,11 @@ export function BusinessProfileForm() {
               </div>
             </CardContent>
           </Card>
-
-          <LocationSection />
-          <PhotosSection />
         </div>
       </form>
+
+      <DynamicMapSection />
+      <PhotosSection />
     </div>
   );
 }
