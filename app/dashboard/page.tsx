@@ -87,7 +87,8 @@ export default async function DashboardPage() {
 
           <div className="space-y-6">
             {profile.role === 'seller' &&
-              profile?.seller_status === 'approved' && (
+              profile?.seller_status === 'approved' &&
+              profile.seller_details.location && (
                 <MapPreview
                   location={profile.seller_details.location}
                   isInteractive={true}

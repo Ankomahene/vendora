@@ -4,11 +4,20 @@ import { useRef, useEffect, useState } from 'react';
 import { LocateFixed, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Location } from '@/lib/types';
 
 // Use a sample implementation that would be replaced with Mapbox in production
 export function MapPreview({
-  location = { lat: 40.7128, lng: -74.006, address: 'New York, NY 10001' },
+  location = {
+    lat: 40.7128,
+    lng: -74.006,
+    address: 'New York, NY 10001',
+    name: '',
+  },
   isInteractive = false,
+}: {
+  location: Location;
+  isInteractive: boolean;
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -87,6 +96,41 @@ export function MapPreview({
 
     mapContainer.appendChild(marker);
 
+    // Add location label below marker
+    const labelContainer = document.createElement('div');
+    labelContainer.style.position = 'absolute';
+    labelContainer.style.top = '50%';
+    labelContainer.style.left = '50%';
+    labelContainer.style.transform = 'translate(-50%, 20px)';
+    labelContainer.style.background = 'white';
+    labelContainer.style.padding = '8px 12px';
+    labelContainer.style.borderRadius = '6px';
+    labelContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+    labelContainer.style.textAlign = 'center';
+    labelContainer.style.width = 'max-content';
+    labelContainer.style.maxWidth = '200px';
+    labelContainer.style.zIndex = '10';
+
+    // Add location name if available
+    if (location.name) {
+      const nameElement = document.createElement('div');
+      nameElement.style.fontWeight = '500';
+      nameElement.style.fontSize = '14px';
+      nameElement.style.color = '#1f2937';
+      nameElement.textContent = location.name;
+      labelContainer.appendChild(nameElement);
+    }
+
+    // Add address
+    const addressElement = document.createElement('div');
+    addressElement.style.fontSize = '12px';
+    addressElement.style.color = '#6b7280';
+    addressElement.style.marginTop = location.name ? '4px' : '0';
+    addressElement.textContent = location.address || '';
+    labelContainer.appendChild(addressElement);
+
+    mapContainer.appendChild(labelContainer);
+
     // Add circular pulse effect
     const pulse = document.createElement('div');
     pulse.style.position = 'absolute';
@@ -164,7 +208,7 @@ export function MapPreview({
             <Button
               onClick={handleGetDirections}
               variant="outline"
-              className="w-full text-[#4a51e5] border-[#4a51e5] hover:bg-[#4a51e5]/10"
+              className="w-full text-primary border-primary hover:bg-primary/10 dark:text-primary dark:border-primary dark:hover:bg-primary/20"
             >
               <LocateFixed className="mr-2 h-4 w-4" />
               Get Directions
