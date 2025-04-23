@@ -47,7 +47,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </Sheet>
 
         {/* Main content */}
-        <main className="max-h-[calc(100vh-67px)] overflow-auto bg-muted/30 w-full">
+        <main className="max-h-[calc(100vh-65px)] overflow-auto bg-muted/30 w-full">
           <div className="container py-6 md:py-8">{children}</div>
         </main>
       </div>

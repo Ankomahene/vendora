@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProfileServices } from '@/lib/hooks';
 import { SellerDetails } from '@/lib/types';
@@ -127,12 +127,12 @@ export function BusinessProfileForm() {
               <ServiceModesSection form={form} />
 
               <div className="flex justify-end mt-6">
-                <Button type="submit" disabled={updateProfile.isPending}>
+                <PrimaryButton type="submit" disabled={updateProfile.isPending}>
                   {updateProfile.isPending && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Save Business Profile
-                </Button>
+                  Save Business Details
+                </PrimaryButton>
               </div>
             </CardContent>
           </Card>

@@ -20,6 +20,7 @@ import { NoLocationPlaceholder } from './NoLocationPlaceholder';
 import { SearchBar } from './SearchBar';
 import { GoogleSearchBar } from './GoogleSearchBar';
 import { Map as MapIcon } from 'lucide-react';
+import { PrimaryButton } from '@/components/PrimaryButton';
 
 export default function MapSection() {
   const { user, updateProfile } = useProfileServices();
@@ -163,22 +164,13 @@ export default function MapSection() {
                 >
                   <LocationDetails location={selectedLocation} />
 
-                  <div className="flex items-center gap-4 py-2">
-                    <Button
+                  <div className="flex justify-end items-center gap-4 p-2">
+                    <PrimaryButton
                       onClick={handleSaveLocation}
-                      className="w-full"
                       disabled={isSaving}
                     >
-                      {isSaving ? 'Saving...' : 'Save Location'}
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowMap(false)}
-                      className="w-full"
-                    >
-                      Cancel
-                    </Button>
+                      {isSaving ? 'Saving...' : 'Save Business Location'}
+                    </PrimaryButton>
                   </div>
                 </motion.div>
               ) : (

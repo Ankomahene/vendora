@@ -8,7 +8,7 @@ export const PrimaryButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Button
         ref={ref}
         className={cn(
-          'bg-gradient-to-r from-[#4a51e5] to-[#2fd48f] hover:opacity-90 text-white cursor-pointer',
+          'bg-gradient-to-r from-[#4c3fc4] to-[#1b8a5c] hover:opacity-90 text-white cursor-pointer',
           className
         )}
         {...props}
