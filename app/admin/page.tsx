@@ -1,3 +1,7 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import {
   Card,
@@ -20,7 +24,62 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-export default async function AdminPage() {
+export default function AdminPage() {
+  const [stats, setStats] = useState({
+    categories: 0,
+    productTypes: 0,
+    sellers: 0,
+    pendingApprovals: 5, // Default values for UI
+    pendingListings: 12,
+    flaggedReviews: 3,
+  });
+  const [loading, setLoading] = useState(true);
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        // Fetch categories count
+        const { count: categoriesCount, error: categoriesError } =
+          await supabase
+            .from('categories')
+            .select('*', { count: 'exact', head: true });
+
+        if (categoriesError) throw categoriesError;
+
+        // Fetch product types count
+        const { count: productTypesCount, error: productTypesError } =
+          await supabase
+            .from('product_types')
+            .select('*', { count: 'exact', head: true });
+
+        if (productTypesError) throw productTypesError;
+
+        // Fetch sellers count
+        const { count: sellersCount, error: sellersError } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('role', 'seller');
+
+        if (sellersError) throw sellersError;
+
+        setStats((prev) => ({
+          ...prev,
+          categories: categoriesCount || 0,
+          productTypes: productTypesCount || 0,
+          sellers: sellersCount || 0,
+        }));
+      } catch (error) {
+        console.error('Error fetching admin stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchStats();
+  }, []);
+
   return (
     <div className="space-y-8">
       <div>
@@ -39,7 +98,7 @@ export default async function AdminPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">5</div>
+            <div className="text-3xl font-bold">{stats.pendingApprovals}</div>
             <p className="text-sm text-muted-foreground">
               Sellers awaiting approval
             </p>
@@ -62,7 +121,7 @@ export default async function AdminPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">12</div>
+            <div className="text-3xl font-bold">{stats.pendingListings}</div>
             <p className="text-sm text-muted-foreground">
               Listings awaiting review
             </p>
@@ -85,7 +144,7 @@ export default async function AdminPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">3</div>
+            <div className="text-3xl font-bold">{stats.flaggedReviews}</div>
             <p className="text-sm text-muted-foreground">
               Reviews needing moderation
             </p>
@@ -218,27 +277,27 @@ export default async function AdminPage() {
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-muted p-3 rounded-md">
                   <div className="text-sm text-muted-foreground">
-                    Total Users
+                    Categories
                   </div>
-                  <div className="text-xl font-bold">1,250</div>
+                  <div className="text-xl font-bold">
+                    {loading ? '...' : stats.categories}
+                  </div>
+                </div>
+                <div className="bg-muted p-3 rounded-md">
+                  <div className="text-sm text-muted-foreground">
+                    Product Types
+                  </div>
+                  <div className="text-xl font-bold">
+                    {loading ? '...' : stats.productTypes}
+                  </div>
                 </div>
                 <div className="bg-muted p-3 rounded-md">
                   <div className="text-sm text-muted-foreground">
                     Active Sellers
                   </div>
-                  <div className="text-xl font-bold">87</div>
-                </div>
-                <div className="bg-muted p-3 rounded-md">
-                  <div className="text-sm text-muted-foreground">
-                    Active Listings
+                  <div className="text-xl font-bold">
+                    {loading ? '...' : stats.sellers}
                   </div>
-                  <div className="text-xl font-bold">342</div>
-                </div>
-                <div className="bg-muted p-3 rounded-md">
-                  <div className="text-sm text-muted-foreground">
-                    Completed Orders
-                  </div>
-                  <div className="text-xl font-bold">526</div>
                 </div>
               </div>
             </CardContent>
@@ -299,7 +358,17 @@ export default async function AdminPage() {
                   variant="outline"
                   className="w-full justify-between"
                 >
-                  <Link href="/admin/users">
+                  <Link href="/admin/product-types">
+                    Manage Product Types
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full justify-between"
+                >
+                  <Link href="/admin/sellers">
                     User Management
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Link>

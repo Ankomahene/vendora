@@ -12,6 +12,8 @@ import {
   Users,
   FileText,
   ChevronRight,
+  Building,
+  Tag,
 } from 'lucide-react';
 import { UserProfile } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -26,7 +28,7 @@ export function DashboardSidebar({ profile }: DashboardSidebarProps) {
   const isSeller = profile?.role === 'seller';
   const isAdmin = profile?.role === 'admin';
 
-  const commonLinks = [
+  const userLinks = [
     {
       href: '/dashboard',
       label: 'Overview',
@@ -51,6 +53,21 @@ export function DashboardSidebar({ profile }: DashboardSidebarProps) {
 
   const sellerLinks = [
     {
+      href: '/dashboard',
+      label: 'Overview',
+      icon: LayoutDashboard,
+    },
+    {
+      href: '/dashboard/messages',
+      label: 'Messages',
+      icon: MessageSquare,
+    },
+    {
+      href: '/dashboard/favorites',
+      label: 'Favorites',
+      icon: Heart,
+    },
+    {
       href: '/dashboard/listings',
       label: 'My Listings',
       icon: ShoppingBag,
@@ -60,9 +77,29 @@ export function DashboardSidebar({ profile }: DashboardSidebarProps) {
       label: 'Business Profile',
       icon: Store,
     },
+    {
+      href: '/dashboard/settings',
+      label: 'Settings',
+      icon: Settings,
+    },
   ];
 
   const adminLinks = [
+    {
+      href: '/admin',
+      label: 'Admin Dashboard',
+      icon: LayoutDashboard,
+    },
+    {
+      href: '/admin/categories',
+      label: 'Categories',
+      icon: Building,
+    },
+    {
+      href: '/admin/product-types',
+      label: 'Product Types',
+      icon: Tag,
+    },
     {
       href: '/admin/sellers',
       label: 'Manage Sellers',
@@ -73,13 +110,14 @@ export function DashboardSidebar({ profile }: DashboardSidebarProps) {
       label: 'Review Listings',
       icon: FileText,
     },
+    {
+      href: '/admin/settings',
+      label: 'Settings',
+      icon: Settings,
+    },
   ];
 
-  const links = [
-    ...commonLinks,
-    ...(isSeller ? sellerLinks : []),
-    ...(isAdmin ? adminLinks : []),
-  ];
+  const links = isAdmin ? adminLinks : isSeller ? sellerLinks : userLinks;
 
   return (
     <aside className="w-full md:w-64 bg-card border-r h-full flex flex-col">
