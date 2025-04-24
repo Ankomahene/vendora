@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LogOut, User } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { useProfileServices, useAuthServices } from '@/lib/hooks';
 
@@ -19,6 +19,7 @@ export const UserMenu = () => {
   const { user } = useProfileServices();
   const { signOut } = useAuthServices();
   const router = useRouter();
+  const pathname = usePathname();
 
   async function handleSignOut() {
     try {
@@ -69,13 +70,25 @@ export const UserMenu = () => {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/profile">
+            <Link
+              href={
+                pathname.startsWith('/admin')
+                  ? '/admin/profile'
+                  : '/dashboard/profile'
+              }
+            >
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/settings">
+            <Link
+              href={
+                pathname.startsWith('/admin')
+                  ? '/admin/settings'
+                  : '/dashboard/settings'
+              }
+            >
               <User className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </Link>

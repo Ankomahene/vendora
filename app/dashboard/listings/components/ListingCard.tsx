@@ -1,20 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { Listing } from '../types';
-import Image from 'next/image';
-import Link from 'next/link';
-import { formatDistanceToNow } from 'date-fns';
-import { Edit, Eye, MoreVertical, Tag, Trash } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,8 +15,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
 import { createClient } from '@/lib/supabase/client';
+import { formatDistanceToNow } from 'date-fns';
+import { Edit, Eye, MoreVertical, Trash } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Listing } from '../types';
+import { CURRENCY } from '@/lib/constants';
 
 interface ListingCardProps {
   listing: Listing;
@@ -160,13 +161,15 @@ export function ListingCard({ listing }: ListingCardProps) {
           {truncateText(listing.description, 100)}
         </p>
 
-        <div className="flex items-center text-sm text-muted-foreground">
+        {/* <div className="flex items-center text-sm text-muted-foreground">
           <Tag className="h-3.5 w-3.5 mr-1" />
-          <span>{listing.category}</span>
-        </div>
+          <span>{listing.product_type}</span>
+        </div> */}
 
         {listing.price !== null && (
-          <p className="font-medium mt-2">${listing.price.toFixed(2)}</p>
+          <p className="font-medium mt-2">
+            {CURRENCY} {listing.price.toFixed(2)}
+          </p>
         )}
       </CardContent>
 

@@ -1,23 +1,23 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import {
-  LayoutDashboard,
-  ShoppingBag,
-  MessageSquare,
-  Heart,
-  Settings,
-  Store,
-  Users,
-  FileText,
-  ChevronRight,
-  Building,
-  Tag,
-} from 'lucide-react';
+import { Logo } from '@/components/Logo';
 import { UserProfile } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Logo } from '@/components/Logo';
+import {
+  Building,
+  ChevronRight,
+  Heart,
+  LayoutDashboard,
+  MessageSquare,
+  Settings,
+  ShoppingBag,
+  Store,
+  Tag,
+  Users,
+  User,
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface DashboardSidebarProps {
   profile: UserProfile | null;
@@ -77,11 +77,11 @@ export function DashboardSidebar({ profile }: DashboardSidebarProps) {
       label: 'Business Profile',
       icon: Store,
     },
-    {
-      href: '/dashboard/settings',
-      label: 'Settings',
-      icon: Settings,
-    },
+    // {
+    //   href: '/dashboard/settings',
+    //   label: 'Settings',
+    //   icon: Settings,
+    // },
   ];
 
   const adminLinks = [
@@ -89,6 +89,11 @@ export function DashboardSidebar({ profile }: DashboardSidebarProps) {
       href: '/admin',
       label: 'Admin Dashboard',
       icon: LayoutDashboard,
+    },
+    {
+      href: '/admin/profile',
+      label: 'Admin Profile',
+      icon: User,
     },
     {
       href: '/admin/categories',
@@ -105,16 +110,11 @@ export function DashboardSidebar({ profile }: DashboardSidebarProps) {
       label: 'Manage Sellers',
       icon: Users,
     },
-    {
-      href: '/admin/listings',
-      label: 'Review Listings',
-      icon: FileText,
-    },
-    {
-      href: '/admin/settings',
-      label: 'Settings',
-      icon: Settings,
-    },
+    // {
+    //   href: '/admin/settings',
+    //   label: 'Settings',
+    //   icon: Settings,
+    // },
   ];
 
   const links = isAdmin ? adminLinks : isSeller ? sellerLinks : userLinks;

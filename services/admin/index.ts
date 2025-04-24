@@ -1,47 +1,64 @@
 import { createClient } from '@/lib/supabase/client';
 
-// Update seller status (approve/reject)
-export async function updateSellerStatus(
-  userId: string,
-  status: 'approved' | 'rejected'
-): Promise<boolean> {
-  const supabase = createClient();
+/**
+ * Updates the seller status (approved or rejected) for a user
+ * Only admin users can perform this action
+ */
+export async function updateSellerStatus({
+  userId,
+  status,
+  rejectionReason,
+}: {
+  userId: string;
+  status: 'approved' | 'rejected';
+  rejectionReason?: string;
+}) {
+  try {
+    // Only allow admin users to update seller status
+    const supabase = createClient();
+    const { data: sessionData, error: sessionError } =
+      await supabase.auth.getSession();
 
-  // Check if user is admin
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+    if (sessionError || !sessionData.session) {
+      throw new Error('Authentication required');
+    }
 
-  if (userError || !user) {
-    throw new Error('Unauthorized');
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('role, email')
+      .eq('id', sessionData.session.user.id)
+      .single();
+
+    if (userError || !userData) {
+      throw new Error('Failed to get user profile');
+    }
+
+    if (userData.role !== 'admin') {
+      throw new Error('Only admin users can update seller status');
+    }
+
+    // Call the API to update seller status and send email
+    const response = await fetch('/api/admin/update-seller-status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        status,
+        rejectionReason,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update seller status');
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error updating seller status:', error);
+    throw error;
   }
-
-  const { data: adminProfile, error: adminError } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (adminError || !adminProfile || adminProfile.role !== 'admin') {
-    throw new Error('Only admins can perform this action');
-  }
-
-  // Update seller status
-  const { error: updateError } = await supabase
-    .from('profiles')
-    .update({
-      seller_status: status,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', userId);
-
-  if (updateError) {
-    console.error('Error updating seller status:', updateError);
-    return false;
-  }
-
-  // TODO: Send email notification to seller using the email API
-
-  return true;
 }

@@ -21,9 +21,9 @@ import { SellerActionButtons } from './components/SellerActionButtons';
 export default async function SellerDetailsPage({
   params,
 }: {
-  params: { userId: string };
+  params: Promise<{ userId: string }>;
 }) {
-  const { userId } = params;
+  const { userId } = await params;
   const supabase = await createClient();
 
   const {

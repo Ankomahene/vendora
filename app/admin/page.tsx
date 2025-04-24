@@ -20,7 +20,6 @@ import {
   Settings,
   Layers,
   LineChart,
-  Bell,
   ChevronRight,
 } from 'lucide-react';
 
@@ -29,9 +28,9 @@ export default function AdminPage() {
     categories: 0,
     productTypes: 0,
     sellers: 0,
-    pendingApprovals: 5, // Default values for UI
-    pendingListings: 12,
-    flaggedReviews: 3,
+    pendingApprovals: 0,
+    totalListings: 0,
+    flaggedReviews: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -64,11 +63,31 @@ export default function AdminPage() {
 
         if (sellersError) throw sellersError;
 
+        // Fetch pending sellers count
+        const { count: pendingApprovals, error: pendingApprovalsError } =
+          await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true })
+            .eq('role', 'seller')
+            .eq('seller_status', 'pending');
+
+        if (pendingApprovalsError) throw pendingApprovalsError;
+
+        // Fetch total listings count
+        const { count: totalListings, error: totalListingsError } =
+          await supabase
+            .from('listings')
+            .select('*', { count: 'exact', head: true });
+
+        if (totalListingsError) throw totalListingsError;
+
         setStats((prev) => ({
           ...prev,
           categories: categoriesCount || 0,
           productTypes: productTypesCount || 0,
           sellers: sellersCount || 0,
+          pendingApprovals: pendingApprovals || 0,
+          totalListings: totalListings || 0,
         }));
       } catch (error) {
         console.error('Error fetching admin stats:', error);
@@ -78,6 +97,7 @@ export default function AdminPage() {
     }
 
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -98,7 +118,9 @@ export default function AdminPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{stats.pendingApprovals}</div>
+            <div className="text-3xl font-bold">
+              {loading ? '...' : stats.pendingApprovals}
+            </div>
             <p className="text-sm text-muted-foreground">
               Sellers awaiting approval
             </p>
@@ -117,23 +139,17 @@ export default function AdminPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
               <ShoppingBag className="h-5 w-5 mr-2 text-[#ff7b24]" />
-              Pending Listings
+              Total Listings
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{stats.pendingListings}</div>
+            <div className="text-3xl font-bold">
+              {loading ? '...' : stats.totalListings}
+            </div>
             <p className="text-sm text-muted-foreground">
-              Listings awaiting review
+              Products and services listed
             </p>
           </CardContent>
-          <CardFooter>
-            <Button variant="ghost" asChild className="px-0 text-[#ff7b24]">
-              <Link href="/admin/listings">
-                View All
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Link>
-            </Button>
-          </CardFooter>
         </Card>
 
         <Card className="bg-gradient-to-br from-[#2fd48f]/10 to-transparent border-[#2fd48f]/20">
@@ -298,27 +314,6 @@ export default function AdminPage() {
                   <div className="text-xl font-bold">
                     {loading ? '...' : stats.sellers}
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <Bell className="h-5 w-5 mr-2 text-primary" />
-                Notifications
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-pointer">
-                  <div className="text-sm font-medium">System Update</div>
-                  <div className="text-xs text-muted-foreground">New</div>
-                </div>
-                <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-pointer">
-                  <div className="text-sm font-medium">Maintenance Notice</div>
-                  <div className="text-xs text-muted-foreground">1d</div>
                 </div>
               </div>
             </CardContent>
