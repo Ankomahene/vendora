@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
+import Link from 'next/link';
 
 type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -26,13 +27,15 @@ export const Logo = ({ size = 'md' }: LogoProps) => {
 
   return (
     <div className="relative">
-      <Image
-        src={logoSrc}
-        alt="Vendora Logo"
-        width={dimensions.width}
-        height={dimensions.height}
-        priority
-      />
+      <Link href="/">
+        <Image
+          src={logoSrc}
+          alt="Vendora Logo"
+          width={dimensions.width}
+          height={dimensions.height}
+          priority
+        />
+      </Link>
     </div>
   );
 };

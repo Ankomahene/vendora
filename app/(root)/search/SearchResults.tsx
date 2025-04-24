@@ -11,7 +11,9 @@ interface SearchResultsProps {
 }
 
 export function SearchResults({ filters }: SearchResultsProps) {
-  const [searchType] = useState<'sellers' | 'listings' | 'categories'>('sellers');
+  const [searchType] = useState<'sellers' | 'listings' | 'categories'>(
+    'sellers'
+  );
 
   if (searchType === 'sellers' && mockSellers.length === 0) {
     return <EmptyState type="sellers" />;

@@ -1,16 +1,16 @@
-import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
+import { Header } from './components/layout/Header';
 
-export default function RootLayout({
+export default async function CustomerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Header />
-      <main>{children}</main>
+      <main className="flex-1">{children}</main>
       <Footer />
-    </>
+    </div>
   );
 }

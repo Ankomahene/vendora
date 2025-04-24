@@ -8,12 +8,14 @@ import { useProfileServices } from '@/lib/hooks';
 import { cn } from '@/lib/utils';
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isLoading } = useProfileServices();
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,6 +25,37 @@ export function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const navLinks = (
+    <nav className="hidden md:flex items-center space-x-6">
+      <NavLink href="/products" isScrolled={isScrolled}>
+        Products
+      </NavLink>
+      <NavLink href="/categories" isScrolled={isScrolled}>
+        Categories
+      </NavLink>
+      <NavLink href="/sellers" isScrolled={isScrolled}>
+        Sellers
+      </NavLink>
+    </nav>
+  );
+
+  const homeNavLinks = (
+    <nav className="hidden md:flex space-x-8">
+      <NavLink href="#features" isScrolled={isScrolled}>
+        Features
+      </NavLink>
+      <NavLink href="#trending" isScrolled={isScrolled}>
+        Explore
+      </NavLink>
+      <NavLink href="#testimonials" isScrolled={isScrolled}>
+        Testimonials
+      </NavLink>
+      <NavLink href="#about" isScrolled={isScrolled}>
+        About
+      </NavLink>
+    </nav>
+  );
 
   return (
     <header
@@ -41,20 +74,8 @@ export function Header() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex space-x-8">
-          <NavLink href="#features" isScrolled={isScrolled}>
-            Features
-          </NavLink>
-          <NavLink href="#trending" isScrolled={isScrolled}>
-            Explore
-          </NavLink>
-          <NavLink href="#testimonials" isScrolled={isScrolled}>
-            Testimonials
-          </NavLink>
-          <NavLink href="#about" isScrolled={isScrolled}>
-            About
-          </NavLink>
-        </nav>
+
+        {pathname === '/' ? homeNavLinks : navLinks}
 
         <div className="hidden md:flex items-center space-x-4">
           {!isLoading && (
