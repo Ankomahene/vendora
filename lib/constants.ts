@@ -117,4 +117,19 @@ export const testimonials = [
   },
 ];
 
+// Currency symbol used throughout the application
 export const CURRENCY = 'GHS';
+
+// Service modes
+export const SERVICE_MODES = [
+  { value: 'delivery', label: 'Delivery' },
+  { value: 'home_service', label: 'Home Service' },
+  { value: 'in_store', label: 'In-store' },
+];
+
+// Default pagination limits
+export const DEFAULT_PAGE_SIZE = 10;
+export const DEFAULT_PAGE = 1;
+
+// Default search radius in miles
+export const DEFAULT_SEARCH_RADIUS = 50;

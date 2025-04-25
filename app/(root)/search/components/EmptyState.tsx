@@ -2,7 +2,7 @@ import { SearchX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface EmptyStateProps {
-  type: 'sellers' | 'listings' | 'categories';
+  type: 'sellers' | 'listings' | 'categories' | 'product_types';
 }
 
 export function EmptyState({ type }: EmptyStateProps) {
@@ -15,7 +15,8 @@ export function EmptyState({ type }: EmptyStateProps) {
         No {type} found
       </h3>
       <p className="text-zinc-600 dark:text-zinc-400 max-w-md mx-auto mb-6">
-        We couldn't find any {type} matching your search criteria. Try adjusting your filters or search terms.
+        We couldn&apos;t find any {type} matching your search criteria. Try
+        adjusting your filters or search terms.
       </p>
       <div className="flex justify-center gap-4">
         <Button variant="outline">Clear Filters</Button>
