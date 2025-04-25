@@ -105,7 +105,6 @@ export const deleteFromSupabase = async (
       throw new Error('Could not parse file URL');
     }
 
-    console.log('filepath', filePath);
     const { error } = await supabase.storage
       .from(bucketName)
       .remove([filePath]);

@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Phone } from 'lucide-react';
 import { BusinessProfileFormValues } from '../types';
+import { CategorySelect } from './CategorySelect';
 
 interface BusinessInfoSectionProps {
   form: UseFormReturn<BusinessProfileFormValues>;
@@ -48,25 +49,7 @@ export function BusinessInfoSection({ form }: BusinessInfoSectionProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="business_category"
-              render={({ field }) => (
-                <FormItem
-                  name="business_category"
-                  formItemId="business_category"
-                >
-                  <FormLabel>Business Category</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g. Barber, Plumber, Caterer"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <CategorySelect control={form.control} />
 
             <FormField
               control={form.control}

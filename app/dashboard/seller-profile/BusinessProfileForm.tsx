@@ -3,7 +3,6 @@
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProfileServices } from '@/lib/hooks';
-import { SellerDetails } from '@/lib/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -17,6 +16,7 @@ import {
   ServicesSection,
 } from './components';
 import { BusinessProfileFormValues, businessProfileSchema } from './types';
+import { SellerDetails } from '@/lib/types';
 
 const DynamicMapSection = dynamic(
   () => import('@/components/map/components/MapSection'),
@@ -79,7 +79,10 @@ export function BusinessProfileForm() {
       await updateProfile.mutateAsync({
         userId: user.id,
         data: {
-          seller_details: data as SellerDetails,
+          seller_details: {
+            ...user.seller_details,
+            ...(data as SellerDetails),
+          },
         },
       });
 

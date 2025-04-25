@@ -41,7 +41,6 @@ export function PasswordChangeForm() {
   });
 
   const onPasswordSubmit = async (data: PasswordFormValues) => {
-    console.log('Password change initiated', { data });
     setIsChangingPassword(true);
 
     try {

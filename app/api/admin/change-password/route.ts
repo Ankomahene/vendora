@@ -9,11 +9,8 @@ const passwordChangeSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  console.log('Password change API route called');
-
   try {
     const body = await request.json();
-    console.log('Request body received');
 
     // Validate request body
     const result = passwordChangeSchema.safeParse(body);
@@ -26,11 +23,9 @@ export async function POST(request: NextRequest) {
     }
 
     const { currentPassword, newPassword } = result.data;
-    console.log('Request validated successfully');
 
     // Get current user
     const supabase = await createClient();
-    console.log('Supabase client created');
 
     const {
       data: { user },
@@ -44,7 +39,6 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-    console.log('User authenticated');
 
     // Verify user is admin
     const { data: profile, error: profileError } = await supabase
@@ -68,7 +62,6 @@ export async function POST(request: NextRequest) {
         { status: 403 }
       );
     }
-    console.log('Admin privileges verified');
 
     // Get user's email for sign-in
     const { data: userData, error: userDataError } = await supabase
@@ -84,7 +77,6 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
-    console.log('User email retrieved');
 
     // Verify current password by signing in
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -102,13 +94,11 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.log('Current password verified');
 
     // Check if admin client can be created
     try {
       // Use admin client to update password
       const adminClient = createAdminClient();
-      console.log('Admin client created');
 
       const { error: updateError } =
         await adminClient.auth.admin.updateUserById(user.id, {
@@ -123,7 +113,6 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      console.log('Password updated successfully');
       return NextResponse.json({
         success: true,
         message: 'Password updated successfully',

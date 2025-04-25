@@ -24,6 +24,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { UserProfile, Location } from '@/lib/types';
 import { MapPreview } from '@/app/dashboard/components/MapPreview';
 import { Listing } from '../types';
+import { ProductType } from '@/lib/types/prouduct-type';
 
 // Define the schema for form validation
 const listingFormSchema = z.object({
@@ -47,11 +48,6 @@ const listingFormSchema = z.object({
 
 type ListingFormValues = z.infer<typeof listingFormSchema>;
 
-interface ProductType {
-  id: string;
-  name: string;
-}
-
 interface ListingFormProps {
   profile: UserProfile;
   listingToEdit?: Listing | null;
@@ -64,7 +60,9 @@ export function ListingForm({
   isEditing = false,
 }: ListingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
+  const [productTypes, setProductTypes] = useState<
+    Pick<ProductType, 'id' | 'name'>[]
+  >([]);
   const [images, setImages] = useState<string[]>(listingToEdit?.images || []);
   const [useProfileLocation, setUseProfileLocation] = useState(
     listingToEdit

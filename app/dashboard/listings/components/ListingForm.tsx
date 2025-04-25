@@ -36,7 +36,7 @@ const listingFormSchema = z.object({
     .min(20, { message: 'Description must be at least 20 characters' })
     .max(2000),
   price: z.string().optional(),
-  category: z.string({ required_error: 'Please select a category' }),
+  product_type: z.string({ required_error: 'Please select a product type' }),
   tags: z.string().optional(),
   service_modes: z
     .array(z.string())
@@ -64,7 +64,7 @@ export function ListingForm({
   isEditing = false,
 }: ListingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [productTypes, setProductTypes] = useState<Category[]>([]);
   const [images, setImages] = useState<string[]>(listingToEdit?.images || []);
   const [useProfileLocation, setUseProfileLocation] = useState(
     listingToEdit
@@ -86,7 +86,7 @@ export function ListingForm({
       title: listingToEdit?.title || '',
       description: listingToEdit?.description || '',
       price: listingToEdit?.price ? String(listingToEdit.price) : '',
-      category: listingToEdit?.category || '',
+      product_type: listingToEdit?.product_type || '',
       tags: listingToEdit?.tags ? listingToEdit.tags.join(', ') : '',
       service_modes: listingToEdit?.service_modes || [],
       use_profile_location: useProfileLocation,
@@ -99,16 +99,16 @@ export function ListingForm({
     async function fetchCategories() {
       try {
         const { data, error } = await supabase
-          .from('categories')
+          .from('product_types')
           .select('id, name')
           .order('name');
 
         if (error) throw error;
 
-        setCategories(data || []);
+        setProductTypes(data || []);
       } catch (error) {
-        console.error('Error fetching categories:', error);
-        toast.error('Failed to load categories');
+        console.error('Error fetching product types:', error);
+        toast.error('Failed to load product types');
       }
     }
 
@@ -152,7 +152,7 @@ export function ListingForm({
         title: data.title,
         description: data.description,
         price: priceValue,
-        category: data.category,
+        product_type: data.product_type,
         tags: tagsArray,
         service_modes: data.service_modes,
         location: listingLocation,
@@ -304,44 +304,47 @@ export function ListingForm({
           </CardContent>
         </Card>
 
-        {/* Categories and Tags */}
+        {/* Product Types and Tags */}
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Categories and Tags</h3>
+              <h3 className="text-lg font-medium">Product Types and Tags</h3>
 
               <div className="space-y-2">
                 <label htmlFor="category" className="text-sm font-medium">
-                  Category <span className="text-destructive">*</span>
+                  Product Type <span className="text-destructive">*</span>
                 </label>
                 <Controller
-                  name="category"
+                  name="product_type"
                   control={form.control}
                   render={({ field }) => (
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
-                      <SelectTrigger id="category">
-                        <SelectValue placeholder="Select a category" />
+                      <SelectTrigger id="product_type">
+                        <SelectValue placeholder="Select a product type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
+                        {productTypes.map((productType) => (
+                          <SelectItem
+                            key={productType.id}
+                            value={productType.id}
+                          >
+                            {productType.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   )}
                 />
-                {form.formState.errors.category && (
+                {form.formState.errors.product_type && (
                   <p className="text-sm font-medium text-destructive">
-                    {form.formState.errors.category.message}
+                    {form.formState.errors.product_type.message}
                   </p>
                 )}
                 <p className="text-sm text-muted-foreground">
-                  Choose the category that best fits your listing
+                  Choose the product type that best fits your listing
                 </p>
               </div>
 

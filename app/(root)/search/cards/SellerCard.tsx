@@ -26,7 +26,9 @@ export function SellerCard({ seller }: SellerCardProps) {
                 <div className="flex items-center gap-2 mt-1">
                   <div className="flex items-center">
                     <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="ml-1 text-sm font-medium">{seller.rating}</span>
+                    <span className="ml-1 text-sm font-medium">
+                      {seller.rating}
+                    </span>
                   </div>
                   <span className="text-sm text-zinc-600 dark:text-zinc-400">
                     ({seller.reviewCount} reviews)
@@ -71,7 +73,9 @@ export function SellerCard({ seller }: SellerCardProps) {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                    <div className="text-sm font-medium truncate">{listing.title}</div>
+                    <div className="text-sm font-medium truncate">
+                      {listing.title}
+                    </div>
                     <div className="text-sm">${listing.price}</div>
                   </div>
                 </div>

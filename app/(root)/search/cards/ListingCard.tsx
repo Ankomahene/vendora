@@ -16,12 +16,15 @@ export function ListingCard({ listing }: ListingCardProps) {
           className="w-full h-full object-cover transition-transform group-hover:scale-110"
         />
         <div className="absolute top-3 right-3">
-          <Badge variant="secondary" className="bg-white/90 dark:bg-zinc-800/90">
+          <Badge
+            variant="secondary"
+            className="bg-white/90 dark:bg-zinc-800/90"
+          >
             {listing.serviceMode}
           </Badge>
         </div>
       </div>
-      
+
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-white truncate">

@@ -3,12 +3,12 @@
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Button } from '@/components/ui/button';
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormProvider,
 } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { signupSchema, type SignupFormValues } from '@/lib/auth-schema';
@@ -57,14 +57,14 @@ export default function SignupForm() {
   }
 
   return (
-    <Form {...form}>
+    <FormProvider form={form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid gap-4">
           <FormField
             control={form.control}
             name="full_name"
             render={({ field }) => (
-              <FormItem>
+              <FormItem name="full_name" formItemId="full_name">
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
                   <Input
@@ -83,7 +83,7 @@ export default function SignupForm() {
             control={form.control}
             name="email"
             render={({ field }) => (
-              <FormItem>
+              <FormItem name="email" formItemId="email">
                 <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input
@@ -104,7 +104,7 @@ export default function SignupForm() {
             control={form.control}
             name="password"
             render={({ field }) => (
-              <FormItem>
+              <FormItem name="password" formItemId="password">
                 <FormLabel>Password</FormLabel>
                 <FormControl>
                   <Input
@@ -125,7 +125,7 @@ export default function SignupForm() {
             control={form.control}
             name="role"
             render={() => (
-              <FormItem>
+              <FormItem name="role" formItemId="role">
                 <FormLabel>Account Type</FormLabel>
                 <div className="grid grid-cols-2 gap-4 mt-1">
                   <Button
@@ -160,6 +160,6 @@ export default function SignupForm() {
           </PrimaryButton>
         </div>
       </form>
-    </Form>
+    </FormProvider>
   );
 }

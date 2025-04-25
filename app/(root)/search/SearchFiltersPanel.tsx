@@ -20,7 +20,9 @@ export function SearchFiltersPanel({
   className,
 }: SearchFiltersPanelProps) {
   return (
-    <div className={`bg-white dark:bg-zinc-800 rounded-xl p-6 space-y-6 ${className}`}>
+    <div
+      className={`bg-white dark:bg-zinc-800 rounded-xl p-6 space-y-6 ${className}`}
+    >
       <div>
         <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-4">
           Price Range
@@ -93,12 +95,7 @@ export function SearchFiltersPanel({
         <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-4">
           Distance
         </h3>
-        <Slider
-          defaultValue={[5]}
-          max={50}
-          step={1}
-          className="mb-2"
-        />
+        <Slider defaultValue={[5]} max={50} step={1} className="mb-2" />
         <div className="flex justify-between text-sm text-zinc-600 dark:text-zinc-400">
           <span>0 mi</span>
           <span>50 mi</span>

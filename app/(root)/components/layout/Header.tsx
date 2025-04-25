@@ -58,106 +58,108 @@ export function Header() {
   );
 
   return (
-    <header
-      className={cn(
-        'fixed top-0 w-full z-50 transition-all duration-300',
-        isScrolled
-          ? 'bg-white dark:bg-zinc-900 shadow-md py-2'
-          : 'bg-transparent py-6'
-      )}
-    >
-      <div className="container flex items-center justify-between">
-        <div className="flex items-center">
-          <Link href="/" className="flex items-center">
-            <Logo />
-          </Link>
-        </div>
+    <div className="h-[120px]">
+      <header
+        className={cn(
+          'fixed top-0 w-full z-50 transition-all duration-300 ',
+          isScrolled
+            ? 'bg-white dark:bg-zinc-900 shadow-md py-2'
+            : 'bg-transparent py-6'
+        )}
+      >
+        <div className="container flex items-center justify-between">
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center">
+              <Logo />
+            </Link>
+          </div>
 
-        {/* Desktop Navigation */}
+          {/* Desktop Navigation */}
 
-        {pathname === '/' ? homeNavLinks : navLinks}
+          {pathname === '/' ? homeNavLinks : navLinks}
 
-        <div className="hidden md:flex items-center space-x-4">
-          {!isLoading && (
-            <>
-              {user ? (
-                <UserMenu />
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <Link href="/auth/login">Log in</Link>
-                  <Separator orientation="vertical" className="h-4 w-0.5" />
-                  <Link href="/auth/signup">Sign up</Link>
-                </div>
-              )}
-            </>
-          )}
-
-          <ThemeToggle />
-        </div>
-
-        {/* Mobile Menu Button */}
-        <div className="flex md:hidden items-center space-x-4">
-          <ThemeToggle />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </Button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-zinc-900 shadow-lg">
-          <nav className="container py-4 flex flex-col space-y-4">
-            <MobileNavLink
-              href="#features"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Features
-            </MobileNavLink>
-            <MobileNavLink
-              href="#trending"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Explore
-            </MobileNavLink>
-            <MobileNavLink
-              href="#testimonials"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Testimonials
-            </MobileNavLink>
-            <MobileNavLink href="#about" onClick={() => setIsMenuOpen(false)}>
-              About
-            </MobileNavLink>
-
+          <div className="hidden md:flex items-center space-x-4">
             {!isLoading && (
               <>
                 {user ? (
                   <UserMenu />
                 ) : (
-                  <div className="pt-4 border-t border-gray-100 dark:border-zinc-800 flex space-x-4">
-                    <Link href="/auth/login">
-                      <Button variant="link" size="sm" className="flex-1">
-                        Log in
-                      </Button>
-                    </Link>
-                    <Link href="/auth/signup">
-                      <Button variant="default" size="sm">
-                        Sign up
-                      </Button>
-                    </Link>
+                  <div className="flex items-center space-x-2">
+                    <Link href="/auth/login">Log in</Link>
+                    <Separator orientation="vertical" className="h-4 w-0.5" />
+                    <Link href="/auth/signup">Sign up</Link>
                   </div>
                 )}
               </>
             )}
-          </nav>
+
+            <ThemeToggle />
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden items-center space-x-4">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </Button>
+          </div>
         </div>
-      )}
-    </header>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden bg-white dark:bg-zinc-900 shadow-lg">
+            <nav className="container py-4 flex flex-col space-y-4">
+              <MobileNavLink
+                href="#features"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Features
+              </MobileNavLink>
+              <MobileNavLink
+                href="#trending"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Explore
+              </MobileNavLink>
+              <MobileNavLink
+                href="#testimonials"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Testimonials
+              </MobileNavLink>
+              <MobileNavLink href="#about" onClick={() => setIsMenuOpen(false)}>
+                About
+              </MobileNavLink>
+
+              {!isLoading && (
+                <>
+                  {user ? (
+                    <UserMenu />
+                  ) : (
+                    <div className="pt-4 border-t border-gray-100 dark:border-zinc-800 flex space-x-4">
+                      <Link href="/auth/login">
+                        <Button variant="link" size="sm" className="flex-1">
+                          Log in
+                        </Button>
+                      </Link>
+                      <Link href="/auth/signup">
+                        <Button variant="default" size="sm">
+                          Sign up
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </>
+              )}
+            </nav>
+          </div>
+        )}
+      </header>
+    </div>
   );
 }
 

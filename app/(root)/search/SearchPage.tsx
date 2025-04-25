@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { SearchFilters } from '@/lib/types';
+import { SearchFilters } from '@/lib';
 import { SearchHeader } from './SearchHeader';
 import { SearchResults } from './SearchResults';
 import { SearchFiltersPanel } from './SearchFiltersPanel';
