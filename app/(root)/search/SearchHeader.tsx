@@ -15,7 +15,7 @@ export function SearchHeader() {
   const [searchType, setSearchType] = useState<SearchType>('listings');
 
   return (
-    <div className="sticky top-24 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 shadow-sm">
+    <div className="sticky top-20 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 shadow-sm">
       <div className="container py-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 flex gap-4">

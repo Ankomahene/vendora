@@ -1,11 +1,11 @@
 'use client';
 
-import { Category } from '@/lib/types/category';
 import { CategoryCard } from './CategoryCard';
 import { Loader2 } from 'lucide-react';
+import { EnhancedCategory } from './CategoriesClient';
 
 interface CategoryGridProps {
-  categories: Category[];
+  categories: EnhancedCategory[];
   isLoading: boolean;
 }
 

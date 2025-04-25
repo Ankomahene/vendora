@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getUserProfile } from '@/services/profile';
 import { PageHeader } from '@/components/page-header';
-import { ListingForm } from '../components/CreateListingForm';
+import { ListingForm } from '../components/ListingForm';
 
 export const metadata = {
   title: 'Create Listing',

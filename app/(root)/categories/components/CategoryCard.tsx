@@ -2,11 +2,11 @@
 'use client';
 
 import Link from 'next/link';
-import { Category } from '@/lib/types/category';
 import { Badge } from '@/components/ui/badge';
+import { EnhancedCategory } from './CategoriesClient';
 
 interface CategoryCardProps {
-  category: Category;
+  category: EnhancedCategory;
 }
 
 export function CategoryCard({ category }: CategoryCardProps) {
@@ -36,10 +36,16 @@ export function CategoryCard({ category }: CategoryCardProps) {
             {category.description}
           </p>
         )}
-        <Badge variant="secondary" className="mt-2">
-          {/* {category.product_count}{' '}
-          {category.product_count === 1 ? 'product' : 'products'} */}
-        </Badge>
+        <div className="flex gap-2 mt-2">
+          <Badge variant="secondary">
+            {category.businessCount}{' '}
+            {category.businessCount === 1 ? 'business' : 'businesses'}
+          </Badge>
+          <Badge variant="outline">
+            {category.listingCount}{' '}
+            {category.listingCount === 1 ? 'listing' : 'listings'}
+          </Badge>
+        </div>
       </div>
     </Link>
   );

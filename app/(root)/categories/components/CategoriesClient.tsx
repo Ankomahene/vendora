@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useCategories } from '@/lib/hooks/useCategories';
 import { CategoryGrid } from './CategoryGrid';
 import { CategoriesFilters } from './CategoriesFilters';
 import { CategoriesHeader } from './CategoriesHeader';
@@ -13,7 +12,18 @@ export type CategoryFilters = {
   sortBy?: 'name' | 'newest' | 'popular';
 };
 
-export function CategoriesClient() {
+export interface EnhancedCategory extends Category {
+  businessCount: number;
+  listingCount: number;
+}
+
+interface CategoriesClientProps {
+  categories: EnhancedCategory[];
+}
+
+export function CategoriesClient({
+  categories: rawCategories = [],
+}: CategoriesClientProps) {
   const searchParams = useSearchParams();
 
   // Initialize filters from URL params
@@ -31,20 +41,12 @@ export function CategoriesClient() {
     });
   }, [searchParams]);
 
-  const { data: rawCategories = [], isLoading } = useCategories();
-
   // Transform raw categories to include public-facing properties and apply filters
-  const categories = useMemo<Category[]>(() => {
+  const categories = useMemo<EnhancedCategory[]>(() => {
     if (!rawCategories.length) return [];
 
-    const transformed = rawCategories.map((category) => ({
-      ...category,
-      product_count: Math.floor(Math.random() * 50) + 1, // Placeholder random count
-      slug: category.name.toLowerCase().replace(/\s+/g, '-'),
-    }));
-
     // Apply search filter
-    let filtered = transformed;
+    let filtered = [...rawCategories];
     if (filters.search && filters.search.trim()) {
       const searchTerm = filters.search.toLowerCase().trim();
       filtered = filtered.filter(
@@ -64,7 +66,9 @@ export function CategoriesClient() {
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
       } else if (filters.sortBy === 'popular') {
-        return b.product_count - a.product_count;
+        return (
+          b.listingCount + b.businessCount - (a.listingCount + a.businessCount)
+        );
       }
       return a.name.localeCompare(b.name); // Default sorting
     });
@@ -93,7 +97,7 @@ export function CategoriesClient() {
               />
             </div>
 
-            <CategoryGrid categories={categories} isLoading={isLoading} />
+            <CategoryGrid categories={categories} isLoading={false} />
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -24,6 +24,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { UserProfile, Location } from '@/lib/types';
 import { MapPreview } from '@/app/dashboard/components/MapPreview';
 import { Listing } from '../types';
+import { useCategories } from '@/lib/hooks/useCategories';
+import { useProductTypes } from '@/lib/hooks/useProductTypes';
 
 // Define the schema for form validation
 const listingFormSchema = z.object({
@@ -36,6 +38,7 @@ const listingFormSchema = z.object({
     .min(20, { message: 'Description must be at least 20 characters' })
     .max(2000),
   price: z.string().optional(),
+  category: z.string({ required_error: 'Please select a product type' }),
   product_type: z.string({ required_error: 'Please select a product type' }),
   tags: z.string().optional(),
   service_modes: z
@@ -46,11 +49,6 @@ const listingFormSchema = z.object({
 });
 
 type ListingFormValues = z.infer<typeof listingFormSchema>;
-
-interface Category {
-  id: string;
-  name: string;
-}
 
 interface ListingFormProps {
   profile: UserProfile;
@@ -64,7 +62,9 @@ export function ListingForm({
   isEditing = false,
 }: ListingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [productTypes, setProductTypes] = useState<Category[]>([]);
+  const { data: productTypes, isLoading: isLoadingProductTypes } =
+    useProductTypes();
+  const { data: categories, isLoading: isLoadingCategories } = useCategories();
   const [images, setImages] = useState<string[]>(listingToEdit?.images || []);
   const [useProfileLocation, setUseProfileLocation] = useState(
     listingToEdit
@@ -87,33 +87,13 @@ export function ListingForm({
       description: listingToEdit?.description || '',
       price: listingToEdit?.price ? String(listingToEdit.price) : '',
       product_type: listingToEdit?.product_type || '',
+      category: listingToEdit?.category || '',
       tags: listingToEdit?.tags ? listingToEdit.tags.join(', ') : '',
       service_modes: listingToEdit?.service_modes || [],
       use_profile_location: useProfileLocation,
       is_active: listingToEdit?.is_active ?? true,
     },
   });
-
-  // Fetch categories on component mount
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const { data, error } = await supabase
-          .from('product_types')
-          .select('id, name')
-          .order('name');
-
-        if (error) throw error;
-
-        setProductTypes(data || []);
-      } catch (error) {
-        console.error('Error fetching product types:', error);
-        toast.error('Failed to load product types');
-      }
-    }
-
-    fetchCategories();
-  }, [supabase]);
 
   // Function to handle form submission
   async function onSubmit(data: ListingFormValues) {
@@ -304,14 +284,53 @@ export function ListingForm({
           </CardContent>
         </Card>
 
-        {/* Product Types and Tags */}
+        {/* Categories, Product Types and Tags */}
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Product Types and Tags</h3>
+              <h3 className="text-lg font-medium">
+                Product Categories and Tags
+              </h3>
 
               <div className="space-y-2">
                 <label htmlFor="category" className="text-sm font-medium">
+                  Product Category <span className="text-destructive">*</span>
+                </label>
+                <Controller
+                  name="category"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isLoadingProductTypes}
+                    >
+                      <SelectTrigger id="category">
+                        <SelectValue placeholder="Select a product category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories?.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  disabled={isLoadingCategories}
+                />
+                {form.formState.errors.product_type && (
+                  <p className="text-sm font-medium text-destructive">
+                    {form.formState.errors.product_type.message}
+                  </p>
+                )}
+                <p className="text-sm text-muted-foreground">
+                  Choose the product type that best fits your listing
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="product_type" className="text-sm font-medium">
                   Product Type <span className="text-destructive">*</span>
                 </label>
                 <Controller
@@ -321,22 +340,21 @@ export function ListingForm({
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      disabled={isLoadingProductTypes}
                     >
                       <SelectTrigger id="product_type">
                         <SelectValue placeholder="Select a product type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {productTypes.map((productType) => (
-                          <SelectItem
-                            key={productType.id}
-                            value={productType.id}
-                          >
-                            {productType.name}
+                        {productTypes?.map((type) => (
+                          <SelectItem key={type.id} value={type.id}>
+                            {type.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   )}
+                  disabled={isLoadingProductTypes}
                 />
                 {form.formState.errors.product_type && (
                   <p className="text-sm font-medium text-destructive">

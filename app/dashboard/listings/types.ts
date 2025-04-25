@@ -9,6 +9,7 @@ export interface Listing {
   description: string;
   price: number | null;
   product_type: string;
+  category: string;
   tags?: string[];
   service_modes: ServiceMode[];
   location: Location;

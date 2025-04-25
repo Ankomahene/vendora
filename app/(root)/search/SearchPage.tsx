@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { SearchFilters } from '@/lib';
+import { SearchFilters } from '@/lib/types';
 import { SearchHeader } from './SearchHeader';
 import { SearchResults } from './SearchResults';
 import { SearchFiltersPanel } from './SearchFiltersPanel';
@@ -18,7 +18,7 @@ export function SearchPageClient() {
   });
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 pt-20">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
       <SearchHeader />
 
       <div className="container py-8">
