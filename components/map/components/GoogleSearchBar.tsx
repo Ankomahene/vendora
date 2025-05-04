@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Search } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { SearchBarProps } from '../types';
@@ -15,13 +15,19 @@ import {
 } from '../constants';
 import { useOnClickOutside } from '@/lib/hooks/useOnClickOutside';
 
-export function GoogleSearchBar({ onSearchResult, className }: SearchBarProps) {
-  const [inputValue, setInputValue] = useState('');
+export function GoogleSearchBar({
+  onSearchResult,
+  className,
+  location,
+  disabled = false,
+}: SearchBarProps) {
+  const [inputValue, setInputValue] = useState(location?.name || '');
   const [predictions, setPredictions] = useState<
     Array<{ place_id: string; description: string }>
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showPredictions, setShowPredictions] = useState(false);
+  const [isUserTyping, setIsUserTyping] = useState(false);
 
   const debouncedSearch = useDebounce(inputValue, 1000);
   const autoCompleteService = useRef<any>(null);
@@ -65,7 +71,8 @@ export function GoogleSearchBar({ onSearchResult, className }: SearchBarProps) {
 
   // Handle debounced search
   useEffect(() => {
-    if (!debouncedSearch || !autoCompleteService.current) return;
+    if (!debouncedSearch || !autoCompleteService.current || !isUserTyping)
+      return;
 
     setIsLoading(true);
     autoCompleteService.current.getPlacePredictions(
@@ -84,7 +91,13 @@ export function GoogleSearchBar({ onSearchResult, className }: SearchBarProps) {
         }
       }
     );
-  }, [debouncedSearch]);
+  }, [debouncedSearch, isUserTyping]);
+
+  useEffect(() => {
+    setInputValue(location?.name || '');
+    setIsUserTyping(false);
+    setShowPredictions(false);
+  }, [location]);
 
   const handlePredictionSelect = (prediction: {
     place_id: string;
@@ -109,6 +122,7 @@ export function GoogleSearchBar({ onSearchResult, className }: SearchBarProps) {
 
           onSearchResult?.(result);
           setInputValue(place.formatted_address);
+          setIsUserTyping(false);
           setShowPredictions(false);
         }
       }
@@ -119,19 +133,26 @@ export function GoogleSearchBar({ onSearchResult, className }: SearchBarProps) {
     <div ref={containerRef} className={cn('relative w-full', className)}>
       <div className="relative flex-1">
         <Input
-          placeholder="Search using Google Maps..."
+          placeholder="Search locations..."
           value={inputValue}
           onChange={(e) => {
             setInputValue(e.target.value);
+            setIsUserTyping(true);
             if (e.target.value === '') {
               setPredictions([]);
               setShowPredictions(false);
+              setIsUserTyping(false);
             }
           }}
-          onFocus={() => predictions.length > 0 && setShowPredictions(true)}
+          onFocus={() => {
+            if (predictions.length > 0 && isUserTyping) {
+              setShowPredictions(true);
+            }
+          }}
           className="pl-10 pr-4"
+          disabled={disabled}
         />
-        <Search
+        <MapPin
           className={cn(
             'absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2',
             isLoading ? 'animate-spin' : '',

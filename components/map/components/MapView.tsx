@@ -23,47 +23,43 @@ import { reverseGeocode } from '../utils';
 import { MyLocationButton } from './MyLocationButton';
 
 export function MapView({
-  initialViewState = DEFAULT_MAP_VIEW_STATE,
-  onViewStateChange,
   selectedLocation,
   onLocationSelect,
+  onViewStateChange,
   className,
 }: MapViewProps) {
   const mapRef = useRef<any>(null);
-  const [viewState, setViewState] = useState(initialViewState);
   const [showMarkerAnimation, setShowMarkerAnimation] = useState(false);
-  const isInitialMount = useRef(true);
+  const [viewState, setViewState] = useState(
+    selectedLocation
+      ? {
+          lng: selectedLocation.lng,
+          lat: selectedLocation.lat,
+          zoom: 14,
+        }
+      : DEFAULT_MAP_VIEW_STATE
+  );
 
-  // Handle initial view state
+  // Handle centering when selectedLocation changes or on initial mount
   useEffect(() => {
-    if (isInitialMount.current && mapRef.current) {
+    if (mapRef.current) {
+      const targetLocation = selectedLocation || DEFAULT_MAP_VIEW_STATE;
+
       mapRef.current.flyTo({
-        longitude: initialViewState.lng,
-        latitude: initialViewState.lat,
-        zoom: initialViewState.zoom,
-        duration: 0,
-      });
-      isInitialMount.current = false;
-    }
-  }, [initialViewState]);
-
-  // Update view when selected location changes
-  useEffect(() => {
-    if (selectedLocation && !isInitialMount.current) {
-      mapRef.current?.flyTo({
-        center: [selectedLocation.lng, selectedLocation.lat],
+        center: [targetLocation.lng, targetLocation.lat],
         zoom: 14,
-        duration: 2000,
-        essential: true, // This animation is considered essential for the user experience
+        duration: selectedLocation ? 2000 : 0,
+        essential: true,
       });
 
-      // Trigger animation
-      setShowMarkerAnimation(true);
-      const timer = setTimeout(
-        () => setShowMarkerAnimation(false),
-        MARKER_ANIMATION_DURATION
-      );
-      return () => clearTimeout(timer);
+      if (selectedLocation) {
+        setShowMarkerAnimation(true);
+        const timer = setTimeout(
+          () => setShowMarkerAnimation(false),
+          MARKER_ANIMATION_DURATION
+        );
+        return () => clearTimeout(timer);
+      }
     }
   }, [selectedLocation]);
 

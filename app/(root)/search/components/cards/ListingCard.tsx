@@ -14,7 +14,7 @@ interface ListingCardProps {
 
 export function ListingCard({ listing }: ListingCardProps) {
   return (
-    <Card className="overflow-hidden flex flex-col hover:shadow-md transition-shadow h-full">
+    <Card className="overflow-hidden flex flex-col hover:shadow-md transition-shadow h-full p-0">
       <div className="relative aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
         {listing.images && listing.images.length > 0 ? (
           <img
@@ -34,24 +34,23 @@ export function ListingCard({ listing }: ListingCardProps) {
         </div>
       </div>
 
-      <CardContent className="p-4 flex-grow">
-        <div className="flex items-start justify-between mb-1">
-          <div>
-            <h3 className="font-medium line-clamp-2">{listing.title}</h3>
-          </div>
-          {listing.price !== null && (
-            <div className="text-primary font-medium ml-2 whitespace-nowrap">
-              {CURRENCY}
-              {listing.price.toFixed(2)}
-            </div>
-          )}
-        </div>
-
+      <CardContent className="px-4 py-0 flex-grow">
         <div className="flex items-center text-xs text-zinc-500 dark:text-zinc-400 mb-3">
           <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
           <span className="truncate">
             {listing.location?.address || 'Location not specified'}
           </span>
+        </div>
+
+        <div className="mb-1">
+          {listing.price !== null && (
+            <div className="text-primary font-medium whitespace-nowrap mb-3">
+              {CURRENCY} {listing.price.toFixed(2)}
+            </div>
+          )}
+          <div>
+            <h3 className="font-medium line-clamp-2">{listing.title}</h3>
+          </div>
         </div>
 
         <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-4 line-clamp-2">
@@ -70,15 +69,6 @@ export function ListingCard({ listing }: ListingCardProps) {
                 : mode === 'in_store'
                 ? 'In-store'
                 : 'Delivery'}
-            </Badge>
-          ))}
-          {listing.tags?.slice(0, 1).map((tag, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className="text-xs font-normal"
-            >
-              {tag}
             </Badge>
           ))}
         </div>

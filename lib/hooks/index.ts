@@ -9,3 +9,4 @@ export * from './useAuthServices';
 export * from './useAdminServices';
 export * from './useSellerServices';
 export * from './useSearch';
+export * from './useCurrentLocation';

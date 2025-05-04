@@ -17,6 +17,8 @@ import {
 } from './components';
 import { BusinessProfileFormValues, businessProfileSchema } from './types';
 import { SellerDetails } from '@/lib/types';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 const DynamicMapSection = dynamic(
   () => import('@/components/map/components/MapSection'),
@@ -31,6 +33,7 @@ export function BusinessProfileForm() {
     isLoading: isUserLoading,
     updateProfile,
   } = useProfileServices();
+  const pathname = usePathname();
 
   const form = useForm<BusinessProfileFormValues>({
     resolver: zodResolver(businessProfileSchema),
@@ -79,6 +82,12 @@ export function BusinessProfileForm() {
       await updateProfile.mutateAsync({
         userId: user.id,
         data: {
+          ...(pathname === '/dashboard/seller-onboarding'
+            ? {
+                first_login: false,
+                seller_status: 'pending',
+              }
+            : {}),
           seller_details: {
             ...user.seller_details,
             ...(data as SellerDetails),
@@ -144,6 +153,12 @@ export function BusinessProfileForm() {
 
       <DynamicMapSection />
       <PhotosSection />
+
+      <div className="flex justify-end mt-6">
+        <Link href="/dashboard">
+          <PrimaryButton>Done</PrimaryButton>
+        </Link>
+      </div>
     </div>
   );
 }

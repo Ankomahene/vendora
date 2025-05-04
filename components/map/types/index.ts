@@ -29,8 +29,10 @@ export interface MapViewProps {
 }
 
 export interface SearchBarProps {
+  location?: Location;
   onSearchResult?: (result: SearchResult) => void;
   className?: string;
+  disabled?: boolean;
 }
 
 // Google Maps Types

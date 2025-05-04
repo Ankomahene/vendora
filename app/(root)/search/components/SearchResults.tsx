@@ -6,8 +6,7 @@ import { ListingCard } from './cards/ListingCard';
 import { CategoryCard } from './cards/CategoryCard';
 import { ProductTypeCard } from './cards/ProductTypeCard';
 import { EmptyState } from './EmptyState';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { SearchPagination } from './SearchPagination';
 
 interface SearchResultsProps {
   searchType: SearchParams['searchType'];
@@ -34,7 +33,7 @@ export function SearchResults({
     <div className="space-y-6">
       {/* Sellers Results */}
       {searchType === 'sellers' && (
-        <div className="grid grid-cols-1  lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1  xl:grid-cols-2 gap-6">
           {results.sellers.map((seller) => (
             <SellerCard key={seller.id} seller={seller} />
           ))}
@@ -69,92 +68,13 @@ export function SearchResults({
       )}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center mt-10">
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage <= 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-
-            {/* First Page */}
-            {currentPage > 2 && (
-              <Button
-                variant={currentPage === 1 ? 'default' : 'outline'}
-                size="icon"
-                onClick={() => onPageChange(1)}
-              >
-                1
-              </Button>
-            )}
-
-            {/* Ellipsis if needed */}
-            {currentPage > 3 && (
-              <Button variant="outline" size="icon" disabled>
-                ...
-              </Button>
-            )}
-
-            {/* Page before current */}
-            {currentPage > 1 && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onPageChange(currentPage - 1)}
-              >
-                {currentPage - 1}
-              </Button>
-            )}
-
-            {/* Current Page */}
-            <Button variant="default" size="icon">
-              {currentPage}
-            </Button>
-
-            {/* Page after current */}
-            {currentPage < totalPages && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onPageChange(currentPage + 1)}
-              >
-                {currentPage + 1}
-              </Button>
-            )}
-
-            {/* Ellipsis if needed */}
-            {currentPage < totalPages - 2 && (
-              <Button variant="outline" size="icon" disabled>
-                ...
-              </Button>
-            )}
-
-            {/* Last Page */}
-            {currentPage < totalPages - 1 && (
-              <Button
-                variant={currentPage === totalPages ? 'default' : 'outline'}
-                size="icon"
-                onClick={() => onPageChange(totalPages)}
-              >
-                {totalPages}
-              </Button>
-            )}
-
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage >= totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <div className="flex justify-center items-center mt-10">
+        <SearchPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
+      </div>
     </div>
   );
 }

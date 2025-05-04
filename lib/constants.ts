@@ -1,3 +1,5 @@
+import { SearchParams } from '@/services';
+
 export const categories = [
   { id: 1, name: 'Restaurants', icon: 'utensils' },
   { id: 2, name: 'Shopping', icon: 'shopping-bag' },
@@ -133,3 +135,17 @@ export const DEFAULT_PAGE = 1;
 
 // Default search radius in miles
 export const DEFAULT_SEARCH_RADIUS = 50;
+
+export const initialSearchState: SearchParams = {
+  searchType: 'sellers',
+  category: 'all',
+  productType: 'all',
+  location: null,
+  distance: 0,
+  sortBy: 'relevance',
+  serviceMode: 'all',
+  query: '',
+  priceRange: [0, 1000],
+  limit: 10,
+  page: 1,
+};

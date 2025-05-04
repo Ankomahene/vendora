@@ -1,7 +1,7 @@
 export const DEFAULT_MAP_VIEW_STATE = {
   lng: -0.195306,
   lat: 5.551983,
-  zoom: 6,
+  zoom: 14,
 };
 
 export const DEFAULT_MAP_STYLE = 'mapbox://styles/mapbox/streets-v12';

@@ -74,7 +74,6 @@ export interface Location {
   lng: number;
   address?: string;
   name?: string;
-  placeComponents?: PlaceComponents;
 }
 
 export interface SellerDetails {

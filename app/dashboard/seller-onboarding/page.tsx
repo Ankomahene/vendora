@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { SellerOnboardingForm } from './SellerOnboardingForm';
 import { getUserProfile } from '@/services/profile';
 import { Logo } from '@/components/Logo';
+import { BusinessProfileForm } from '../seller-profile/BusinessProfileForm';
 
 export default async function SellerOnboardingPage() {
   const supabase = await createClient();
@@ -45,7 +45,7 @@ export default async function SellerOnboardingPage() {
           </p>
         </div>
 
-        <SellerOnboardingForm />
+        <BusinessProfileForm />
       </div>
     </div>
   );

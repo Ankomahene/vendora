@@ -1,193 +1,136 @@
 'use client';
 
-import { Slider } from '@/components/ui/slider';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Category } from '@/lib/types/category';
-import { SearchParams } from '@/services/search/searchService';
-import { CURRENCY } from '@/lib/constants';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { useUrlSearchParams } from '@/lib/hooks/useUrlSearchParams';
+import { useSearchContext } from '../SearchContext';
+import { CategorySelect } from './CategorySelect';
+import { DistanceSlider } from './DistanceSlider';
+import { PriceRangeSlider } from './PriceRangeSlider';
+import { ProductTypeSelect } from './ProductTypeSelect';
+import { ServiceModeSelect } from './ServiceModeSelect';
+import { SortBySelect } from './SortBySelect';
+import { SelectType } from './SelectType';
+import { GoogleSearchBar } from '@/components/map';
+import { LocateIcon, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useCurrentLocation } from '@/lib/hooks';
+import { useEffect } from 'react';
+import { Location, SearchResult } from '@/components/map/types';
+import { SearchMapModal } from './SearchMapModal';
 
-interface SearchFiltersPanelProps {
-  categories: Category[];
-  productTypes: { id: string; name: string }[];
-  params: SearchParams;
-  onParamsChange: (params: Partial<SearchParams>) => void;
-  className?: string;
-}
+export function SearchFiltersPanel() {
+  const { searchState, setQuery } = useSearchContext();
+  const {
+    location: currentLocation,
+    detectCurrentLocation,
+    isLoading: isDetectingLocation,
+    error,
+  } = useCurrentLocation();
+  const { updateUrlSearchParams } = useUrlSearchParams();
 
-export function SearchFiltersPanel({
-  categories,
-  productTypes,
-  params,
-  onParamsChange,
-  className,
-}: SearchFiltersPanelProps) {
+  const handleApplyFilters = () => {
+    updateUrlSearchParams({
+      ...searchState,
+      page: 1,
+    });
+  };
+
+  const handleLocationSearch = (result: SearchResult) => {
+    const location: Location = {
+      lat: result.latitude,
+      lng: result.longitude,
+      name: result.name,
+      address: result.address,
+    };
+    setQuery('location', location);
+    setQuery('sortBy', 'proximity');
+  };
+
+  useEffect(() => {
+    setQuery('location', currentLocation);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentLocation]);
+
   return (
-    <div
-      className={`bg-white dark:bg-zinc-800 rounded-xl p-6 space-y-6 ${
-        className || ''
-      }`}
-    >
-      {/* Price Range - only show for listings */}
-      {params.searchType === 'listings' && (
+    <Card className="p-0 rounded-sm">
+      <Card className="p-4 rounded-sm rounded-b-none flex flex-col gap-3">
         <div>
-          <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-4">
-            Price Range
-          </h3>
-          <Slider
-            value={params.priceRange || [0, 1000]}
-            onValueChange={(value) =>
-              onParamsChange({ priceRange: value as [number, number] })
-            }
-            max={1000}
-            step={10}
-            className="mb-2"
-          />
-          <div className="flex justify-between text-sm text-zinc-600 dark:text-zinc-400">
-            <span>
-              {CURRENCY} {params.priceRange?.[0] || 0}
-            </span>
-            <span>
-              {CURRENCY} {params.priceRange?.[1] || 1000}+
-            </span>
-          </div>
+          <span className="py-1 text-sm font-medium">
+            What are you searching for?
+          </span>
+          <SelectType />
         </div>
-      )}
+        {/* location search */}
+        {searchState.searchType !== 'product_types' &&
+          searchState.searchType !== 'categories' && (
+            <>
+              <div>
+                <div className="flex justify-between items-center">
+                  <span className="py-1 text-sm font-medium">
+                    Search location
+                  </span>
 
-      {/* Category - show for sellers and listings */}
-      {(params.searchType === 'sellers' ||
-        params.searchType === 'listings') && (
-        <div>
-          <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-2">
-            Category
-          </h3>
-          <Select
-            value={params.category || 'all'}
-            onValueChange={(value) =>
-              onParamsChange({ category: value === 'all' ? '' : value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+                  <SearchMapModal />
+                </div>
 
-      {/* Product Type - show for listings */}
-      {params.searchType === 'listings' && (
-        <div>
-          <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-2">
-            Product Type
-          </h3>
-          <Select
-            value={params.productType || 'all'}
-            onValueChange={(value) =>
-              onParamsChange({ productType: value === 'all' ? '' : value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All Product Types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Product Types</SelectItem>
-              {productTypes.map((type) => (
-                <SelectItem key={type.id} value={type.id}>
-                  {type.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+                <div className="relative flex-1 flex gap-1 items-center">
+                  <GoogleSearchBar
+                    onSearchResult={handleLocationSearch}
+                    className="w-full"
+                    location={searchState.location || undefined}
+                    disabled={isDetectingLocation}
+                  />
+                  <Button
+                    variant="outline"
+                    className="w-8 h-10 rounded-sm p-1"
+                    onClick={() => {
+                      setQuery('location', null);
+                      setQuery('sortBy', 'relevance');
+                    }}
+                    disabled={isDetectingLocation}
+                    title="Clear location"
+                  >
+                    <X />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-8 h-10 rounded-sm p-1"
+                    onClick={() => {
+                      detectCurrentLocation();
+                      if (!isDetectingLocation && !error) {
+                        setQuery('sortBy', 'proximity');
+                      }
+                    }}
+                    disabled={isDetectingLocation}
+                    title="Select current location"
+                  >
+                    <LocateIcon
+                      className={cn(isDetectingLocation ? 'animate-spin' : '')}
+                    />
+                  </Button>
+                </div>
+              </div>
+              <DistanceSlider />
+            </>
+          )}
+      </Card>
+      <div className="p-4 space-y-4">
+        <PriceRangeSlider />
+        <CategorySelect />
+        <ProductTypeSelect />
+        <ServiceModeSelect />
+        <SortBySelect />
 
-      {/* Service Mode - show for sellers and listings */}
-      {(params.searchType === 'sellers' ||
-        params.searchType === 'listings') && (
-        <div>
-          <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-2">
-            Service Mode
-          </h3>
-          <Select
-            value={params.serviceMode || 'all'}
-            onValueChange={(value) =>
-              onParamsChange({ serviceMode: value === 'all' ? '' : value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All Modes" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Modes</SelectItem>
-              <SelectItem value="delivery">Delivery</SelectItem>
-              <SelectItem value="home_service">Home Service</SelectItem>
-              <SelectItem value="in_store">In-store</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      {/* Sort By */}
-      <div>
-        <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-2">
-          Sort By
-        </h3>
-        <Select
-          value={params.sortBy || 'relevance'}
-          onValueChange={(value) =>
-            onParamsChange({ sortBy: value as SearchParams['sortBy'] })
-          }
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full bg-zinc-200 dark:bg-zinc-900 hover:bg-zinc-300 dark:hover:bg-zinc-950 hover:text-foreground"
+          onClick={handleApplyFilters}
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Sort by..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="relevance">Relevance</SelectItem>
-            <SelectItem value="proximity">Nearest</SelectItem>
-            <SelectItem value="newest">Newest</SelectItem>
-            {params.searchType === 'listings' && (
-              <>
-                <SelectItem value="price_asc">Price: Low to High</SelectItem>
-                <SelectItem value="price_desc">Price: High to Low</SelectItem>
-              </>
-            )}
-          </SelectContent>
-        </Select>
+          Apply Filters
+        </Button>
       </div>
-
-      {/* Distance - Show for location-based searches */}
-      <div>
-        <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-4">
-          Distance
-        </h3>
-        <Slider
-          value={[params.distance || 50]}
-          onValueChange={(value) => onParamsChange({ distance: value[0] })}
-          max={50}
-          step={1}
-          className="mb-2"
-        />
-        <div className="flex justify-between text-sm text-zinc-600 dark:text-zinc-400">
-          <span>0 mi</span>
-          <span>50 mi</span>
-        </div>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
-          Current: {params.distance || 50} miles
-        </p>
-      </div>
-    </div>
+    </Card>
   );
 }

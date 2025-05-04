@@ -133,6 +133,7 @@ export function ListingForm({
         description: data.description,
         price: priceValue,
         product_type: data.product_type,
+        category: data.category,
         tags: tagsArray,
         service_modes: data.service_modes,
         location: listingLocation,

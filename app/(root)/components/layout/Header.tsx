@@ -58,13 +58,13 @@ export function Header() {
   );
 
   return (
-    <div className="h-[120px]">
+    <div className="h-[100px]">
       <header
         className={cn(
           'fixed top-0 w-full z-50 transition-all duration-300 ',
           isScrolled
-            ? 'bg-white dark:bg-zinc-900 shadow-md py-2'
-            : 'bg-transparent py-6'
+            ? 'bg-white dark:bg-zinc-900 shadow-md py-1'
+            : 'bg-transparent py-2'
         )}
       >
         <div className="container flex items-center justify-between">
