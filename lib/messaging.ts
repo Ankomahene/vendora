@@ -5,6 +5,7 @@ import {
   ConversationWithParticipants,
   ConversationResponse,
 } from '@/lib/types/messaging';
+import { REALTIME_POSTGRES_CHANGES_LISTEN_EVENT } from '@supabase/supabase-js';
 
 // Create a new conversation
 export async function createConversation(
@@ -34,7 +35,6 @@ export async function createConversation(
       buyer_id,
       seller_id,
       listing_id,
-      last_message_at: new Date().toISOString(),
     })
     .select()
     .single();
@@ -79,95 +79,6 @@ export async function getAllUserConversations(
   }
 
   return conversations;
-}
-
-// Get conversations for a user
-export async function getUserConversations(
-  userId: string
-): Promise<ConversationWithParticipants[]> {
-  const supabase = createClient();
-
-  // The issue is in the query structure. PostgREST is looking for FK relationships that don't exist
-  // We need to fetch profiles separately and then join them in our code
-  const { data: conversations, error } = await supabase
-    .from('conversations')
-    .select(
-      `*, listing: listing_id(id, title, images)
-    `
-    )
-    .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
-    .order('last_message_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching conversations:', error);
-    return [];
-  }
-
-  if (!conversations || conversations.length === 0) {
-    return [];
-  }
-
-  // Get all the user IDs we need to fetch (both buyers and sellers)
-  const userIds = new Set<string>();
-  conversations.forEach((conv) => {
-    userIds.add(conv.buyer_id);
-    userIds.add(conv.seller_id);
-  });
-
-  // Fetch all relevant user profiles in a single query
-  const { data: profiles, error: profilesError } = await supabase
-    .from('profiles')
-    .select('id, full_name, avatar_url, seller_details')
-    .in('id', Array.from(userIds));
-
-  if (profilesError) {
-    console.error('Error fetching profiles:', profilesError);
-    return [];
-  }
-
-  // Create a lookup map for quick access to profiles
-  const profileMap = new Map();
-  profiles?.forEach((profile) => {
-    profileMap.set(profile.id, profile);
-  });
-
-  // Process the data to match our ConversationWithParticipants interface
-  return conversations.map((conv) => {
-    const buyerProfile = profileMap.get(conv.buyer_id);
-    const sellerProfile = profileMap.get(conv.seller_id);
-
-    // Create properly typed buyer object
-    const buyer = {
-      id: buyerProfile?.id || conv.buyer_id,
-      full_name: buyerProfile?.full_name || 'Unknown User',
-      avatar_url: buyerProfile?.avatar_url,
-    };
-
-    // Create properly typed seller object with business name
-    const seller = {
-      id: sellerProfile?.id || conv.seller_id,
-      full_name: sellerProfile?.full_name || 'Unknown User',
-      avatar_url: sellerProfile?.avatar_url,
-      business_name: sellerProfile?.seller_details?.business_name,
-    };
-
-    // Create properly typed listing object with image
-    const listing = conv.listing
-      ? {
-          id: conv.listing.id,
-          title: conv.listing.title,
-          image_url: conv.listing.images?.[0],
-        }
-      : undefined;
-
-    // Return the properly typed conversation
-    return {
-      ...conv,
-      buyer,
-      seller,
-      listing,
-    } as ConversationWithParticipants;
-  });
 }
 
 // Get a specific conversation by ID
@@ -350,11 +261,29 @@ export async function markMessagesAsRead(
   }
 }
 
+export async function deleteMessage(messageId: string) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('messages')
+    .delete()
+    .eq('id', messageId);
+
+  if (error) {
+    console.error('Error deleting message:', error);
+    throw new Error('Error deleting message');
+  }
+}
+
 // Subscribe to new messages in a conversation
 export function subscribeToConversationMessages(
   conversationId: string,
-  callback: (message: Message) => void
+  callback: (
+    eventType: REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
+    message: Message
+  ) => void
 ) {
+  console.log('subscribing to conversation messages', conversationId);
   const supabase = createClient();
 
   const subscription = supabase
@@ -362,12 +291,43 @@ export function subscribeToConversationMessages(
     .on(
       'postgres_changes',
       {
-        event: '*',
+        event: 'INSERT',
         schema: 'public',
         table: 'messages',
         filter: `conversation_id=eq.${conversationId}`,
       },
-      (payload) => callback(payload.new as Message)
+      (payload) =>
+        callback(
+          payload.eventType as REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
+          payload.new as Message
+        )
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`,
+      },
+      (payload) =>
+        callback(
+          payload.eventType as REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
+          payload.new as Message
+        )
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'messages',
+      },
+      (payload) =>
+        callback(
+          payload.eventType as REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
+          payload.old as Message
+        )
     )
     .subscribe();
 
@@ -376,7 +336,7 @@ export function subscribeToConversationMessages(
   };
 }
 
-export function subscribeToMultipleConversations(
+export function subscribeToMultipleConversationsMessages(
   conversationIds: string[],
   callback: (message: Message) => void
 ) {
@@ -392,10 +352,7 @@ export function subscribeToMultipleConversations(
         table: 'messages',
         filter: `conversation_id=in.(${conversationIds.join(',')})`,
       },
-      (payload) => {
-        console.log('insert payload', payload);
-        return callback(payload.new as Message);
-      }
+      (payload) => callback(payload.new as Message)
     )
     .on(
       'postgres_changes',
@@ -405,10 +362,7 @@ export function subscribeToMultipleConversations(
         table: 'messages',
         filter: `conversation_id=in.(${conversationIds.join(',')})`,
       },
-      (payload) => {
-        console.log('update payload', payload);
-        return callback(payload.new as Message);
-      }
+      (payload) => callback(payload.new as Message)
     )
     .subscribe();
 
@@ -418,7 +372,10 @@ export function subscribeToMultipleConversations(
 }
 
 // Subscribe to conversation updates for a user
-export function subscribeToConversations(userId: string, callback: () => void) {
+export function subscribeToUserConversations(
+  userId: string,
+  callback: (conversation: Conversation) => void
+) {
   const supabase = createClient();
 
   // Create a channel for conversation updates
@@ -427,15 +384,22 @@ export function subscribeToConversations(userId: string, callback: () => void) {
     .on(
       'postgres_changes',
       {
-        event: '*', // Listen for INSERT, UPDATE, and DELETE
+        event: 'UPDATE',
         schema: 'public',
         table: 'conversations',
-        filter: `buyer_id=eq.${userId},seller_id=eq.${userId}`, // Listen to conversations where the user is a buyer or seller
+        // filter: `or(buyer_id=eq.${userId},seller_id=eq.${userId})`, // Listen to conversations where the user is a buyer or seller
       },
-      () => {
-        // When any conversation changes, trigger the callback
-        callback();
-      }
+      (payload) => callback(payload.new as Conversation)
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'conversations',
+        // filter: `or(buyer_id=eq.${userId},seller_id=eq.${userId})`, // Listen to conversations where the user is a buyer or seller
+      },
+      (payload) => callback(payload.new as Conversation)
     )
     .subscribe();
 

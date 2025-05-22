@@ -54,12 +54,13 @@ export function ConversationSidebar({
             conversation={conversation}
             isActive={activeConversationId === conversation.id}
             onClick={() => handleSelectConversation(conversation.id)}
+            highlight={unreadMessagesCount[conversation.id] > 0}
           />
           {unreadMessagesCount[conversation.id] && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
               <Badge
                 variant="outline"
-                className="text-xs bg-red-200 text-red-800 rounded-full"
+                className="text-xs bg-green-500 text-white rounded-full px-2"
               >
                 {unreadMessagesCount[conversation.id]}
               </Badge>

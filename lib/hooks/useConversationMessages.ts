@@ -8,6 +8,7 @@ import { Message } from '@/lib/types/messaging';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useProfileServices } from './useProfileServices';
+import { REALTIME_POSTGRES_CHANGES_LISTEN_EVENT } from '@supabase/supabase-js';
 
 interface UseConversationMessagesProps {
   conversationId?: string;
@@ -61,25 +62,38 @@ export function useConversationMessages({
     // Subscribe to new messages
     const unsubscribe = subscribeToConversationMessages(
       conversationId,
-      async (newMessage) => {
-        queryClient.setQueryData(
-          ['messages', conversationId],
-          (oldData: Message[] = []) => {
-            // Check if message exists already to avoid duplicates
-            const messageExists = oldData.some(
-              (msg) => msg.id === newMessage.id
-            );
-            if (messageExists) {
-              return oldData.map((msg) =>
-                msg.id === newMessage.id ? newMessage : msg
+      async (eventType, newMessage) => {
+        console.log('eventType', eventType);
+        if (
+          eventType === REALTIME_POSTGRES_CHANGES_LISTEN_EVENT.INSERT ||
+          eventType === REALTIME_POSTGRES_CHANGES_LISTEN_EVENT.UPDATE
+        ) {
+          queryClient.setQueryData(
+            ['messages', conversationId],
+            (oldData: Message[] = []) => {
+              // Check if message exists already to avoid duplicates
+              const messageExists = oldData.some(
+                (msg) => msg.id === newMessage.id
               );
+              if (messageExists) {
+                return oldData.map((msg) =>
+                  msg.id === newMessage.id ? newMessage : msg
+                );
+              }
+              return [...oldData, newMessage];
             }
-            return [...oldData, newMessage];
-          }
-        );
+          );
+        }
+        if (eventType === REALTIME_POSTGRES_CHANGES_LISTEN_EVENT.DELETE) {
+          console.log('delete', newMessage);
+          queryClient.setQueryData(
+            ['messages', conversationId],
+            (oldData: Message[] = []) =>
+              oldData.filter((msg) => msg.id !== newMessage.id)
+          );
+        }
       }
     );
-
     return () => {
       unsubscribe();
     };

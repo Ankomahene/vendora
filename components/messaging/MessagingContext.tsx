@@ -13,6 +13,7 @@ interface MessagingContextType {
   setUnreadMessagesCount: (unreadMessagesCount: {
     [key: string]: number;
   }) => void;
+  moveConversationToTop: (conversationId: string) => void;
 }
 
 export const MessagingContext = createContext<MessagingContextType | null>(
@@ -39,16 +40,34 @@ export const MessagingProvider = ({
     setConversations(conversations);
   };
 
+  const moveConversationToTop = (conversationId: string) => {
+    setConversations((prevConversations) => {
+      const conversation = prevConversations.find(
+        (c) => c.id === conversationId
+      );
+      if (!conversation) return prevConversations;
+
+      return [
+        conversation,
+        ...prevConversations.filter((c) => c.id !== conversationId),
+      ];
+    });
+  };
+
+  const activeConversation =
+    activeConversationId && conversations.length > 0
+      ? conversations.find((c) => c.id === activeConversationId)
+      : null;
+
   const value = {
     conversations,
     activeConversationId,
     setActiveConversationId,
     setInitialConversations,
-    activeConversation: activeConversationId
-      ? conversations.find((c) => c.id === activeConversationId)
-      : null,
+    activeConversation,
     unreadMessagesCount,
     setUnreadMessagesCount,
+    moveConversationToTop,
   };
 
   return (

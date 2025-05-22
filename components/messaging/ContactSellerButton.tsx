@@ -14,6 +14,7 @@ import { Input } from '../ui/input';
 import { Card } from '../ui/card';
 import Image from 'next/image';
 import { CURRENCY } from '@/lib/constants';
+import { REALTIME_POSTGRES_CHANGES_LISTEN_EVENT } from '@supabase/supabase-js';
 
 interface ContactSellerButtonProps {
   buyerId: string;
@@ -80,8 +81,23 @@ export function ContactSellerButton({
       // Subscribe to new messages
       const unsubscribe = subscribeToConversationMessages(
         conversationId,
-        (newMsg) => {
-          setMessages((prev) => [...prev, newMsg]);
+        (eventType, newMsg) => {
+          if (
+            eventType === REALTIME_POSTGRES_CHANGES_LISTEN_EVENT.INSERT ||
+            eventType === REALTIME_POSTGRES_CHANGES_LISTEN_EVENT.UPDATE
+          ) {
+            setMessages((prev) => {
+              const messageExists = prev.some((msg) => msg.id === newMsg.id);
+              if (messageExists) {
+                return prev.map((msg) => (msg.id === newMsg.id ? newMsg : msg));
+              }
+              return [...prev, newMsg];
+            });
+          }
+
+          if (eventType === REALTIME_POSTGRES_CHANGES_LISTEN_EVENT.DELETE) {
+            setMessages((prev) => prev.filter((msg) => msg.id !== newMsg.id));
+          }
         }
       );
 

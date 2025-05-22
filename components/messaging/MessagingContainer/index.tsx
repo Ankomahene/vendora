@@ -11,9 +11,9 @@ import { MessageList } from './MessageList';
 import { MobileSideBar } from './MobileSideBar';
 import {
   getUserUnreadMessagesCount,
-  subscribeToMultipleConversations,
+  subscribeToMultipleConversationsMessages,
+  subscribeToUserConversations,
 } from '@/lib/messaging';
-
 interface MessagingWindowProps {
   conversations: ConversationResponse[];
   currentUserId: string;
@@ -33,6 +33,7 @@ export function MessagingContainer({
     activeConversationId,
     unreadMessagesCount,
     setUnreadMessagesCount,
+    moveConversationToTop,
   } = useMessagingContext();
   //
   useEffect(() => {
@@ -52,7 +53,21 @@ export function MessagingContainer({
   }, [conversations]);
 
   useEffect(() => {
-    const unsubscribe = subscribeToMultipleConversations(
+    const unsubscribe = subscribeToUserConversations(
+      currentUserId,
+      (conversation) => {
+        moveConversationToTop(conversation.id);
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversations]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToMultipleConversationsMessages(
       conversations.map((conversation) => conversation.id),
       async () => {
         const unreadMessagesCountMap = await getUserUnreadMessagesCount(

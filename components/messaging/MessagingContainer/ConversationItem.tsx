@@ -7,12 +7,14 @@ import Image from 'next/image';
 interface ConversationItemProps {
   conversation: ConversationResponse;
   isActive: boolean;
+  highlight: boolean;
   onClick: () => void;
 }
 
 export function ConversationItem({
   conversation,
   isActive,
+  highlight,
   onClick,
 }: ConversationItemProps) {
   const { buyer, seller, product } = conversation;
@@ -50,7 +52,12 @@ export function ConversationItem({
       </Avatar>
 
       <div className="flex-1 min-w-0 text-left">
-        <p className="font-medium truncate">
+        <p
+          className={cn(
+            'truncate text-gray-700',
+            highlight && 'text-gray-900 font-medium'
+          )}
+        >
           {isBuyer ? product.title : buyer.full_name}
         </p>
 
