@@ -54,8 +54,8 @@ export function ConversationItem({
       <div className="flex-1 min-w-0 text-left">
         <p
           className={cn(
-            'truncate text-gray-700',
-            highlight && 'text-gray-900 font-medium'
+            'truncate text-gray-700 dark:text-gray-300',
+            highlight && 'text-gray-900 dark:text-gray-100 font-medium'
           )}
         >
           {isBuyer ? product.title : buyer.full_name}

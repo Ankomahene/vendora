@@ -1,6 +1,6 @@
 'use client';
 
-import { ConversationResponse } from '@/lib/types/messaging';
+import { ConversationResponse, Message } from '@/lib/types/messaging';
 import { createContext, useContext, useState } from 'react';
 
 interface MessagingContextType {
@@ -8,12 +8,14 @@ interface MessagingContextType {
   activeConversationId: string | null;
   activeConversation: ConversationResponse | null | undefined;
   unreadMessagesCount: { [key: string]: number };
+  messageToEdit: Message | null;
   setActiveConversationId: (id: string | null) => void;
   setInitialConversations: (conversations: ConversationResponse[]) => void;
   setUnreadMessagesCount: (unreadMessagesCount: {
     [key: string]: number;
   }) => void;
   moveConversationToTop: (conversationId: string) => void;
+  setMessageToEdit: (message: Message | null) => void;
 }
 
 export const MessagingContext = createContext<MessagingContextType | null>(
@@ -35,6 +37,7 @@ export const MessagingProvider = ({
   const [unreadMessagesCount, setUnreadMessagesCount] = useState<{
     [key: string]: number;
   }>({});
+  const [messageToEdit, setMessageToEdit] = useState<Message | null>(null);
 
   const setInitialConversations = (conversations: ConversationResponse[]) => {
     setConversations(conversations);
@@ -68,6 +71,8 @@ export const MessagingProvider = ({
     unreadMessagesCount,
     setUnreadMessagesCount,
     moveConversationToTop,
+    messageToEdit,
+    setMessageToEdit,
   };
 
   return (

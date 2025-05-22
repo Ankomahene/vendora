@@ -37,6 +37,7 @@ export interface Message {
   content: string;
   sent_at: string;
   read: boolean;
+  edited?: boolean;
 }
 
 export interface ConversationWithParticipants extends Conversation {

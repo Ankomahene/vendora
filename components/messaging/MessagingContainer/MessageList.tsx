@@ -5,9 +5,11 @@ import { Skeleton } from '../../ui/skeleton';
 import { MessageBubble } from '../MessageBubble';
 import { useMessagingContext } from '../MessagingContext';
 import { useConversationMessages } from '@/lib/hooks';
+import { Message } from '@/lib/types/messaging';
 
 export function MessageList() {
-  const { activeConversation, activeConversationId } = useMessagingContext();
+  const { activeConversation, activeConversationId, setMessageToEdit } =
+    useMessagingContext();
   const { user } = useProfileServices();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, isLoading } = useConversationMessages({
@@ -20,6 +22,10 @@ export function MessageList() {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
+  const handleEdit = (message: Message) => {
+    setMessageToEdit(message);
+  };
 
   if (!activeConversation) {
     return (
@@ -91,6 +97,7 @@ export function MessageList() {
             isCurrentUser={isCurrentUser}
             senderName={isCurrentUser ? 'You' : otherUser.full_name}
             senderAvatar={isCurrentUser ? undefined : otherUser.avatar_url}
+            onEdit={handleEdit}
           />
         );
       })}

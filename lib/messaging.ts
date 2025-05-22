@@ -275,6 +275,19 @@ export async function deleteMessage(messageId: string) {
   }
 }
 
+export async function updateMessage(messageId: string, content: string) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('messages')
+    .update({ content, edited: true })
+    .eq('id', messageId);
+
+  if (error) {
+    console.error('Error updating message:', error);
+    throw new Error('Error updating message');
+  }
+}
 // Subscribe to new messages in a conversation
 export function subscribeToConversationMessages(
   conversationId: string,

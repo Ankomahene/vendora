@@ -1,12 +1,22 @@
-import React, { useState, KeyboardEvent } from 'react';
+import React, { useState, KeyboardEvent, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { useConversationMessages } from '@/lib/hooks';
+import { Message } from '@/lib/types/messaging';
+import { updateMessage } from '@/lib/messaging';
 
-export function MessageInput({ conversationId }: { conversationId: string }) {
+export function MessageInput({
+  conversationId,
+  messageToEdit,
+  setMessageToEdit,
+}: {
+  conversationId: string;
+  messageToEdit: Message | null;
+  setMessageToEdit: (message: Message | null) => void;
+}) {
   const [message, setMessage] = useState('');
-  const { sendMessage, isSending } = useConversationMessages({
+  const { sendMessage, isSending, markAsRead } = useConversationMessages({
     conversationId,
   });
 
@@ -14,7 +24,14 @@ export function MessageInput({ conversationId }: { conversationId: string }) {
     if (!message.trim() || isSending) return;
 
     try {
-      await sendMessage(message.trim());
+      if (messageToEdit) {
+        await updateMessage(messageToEdit.id, message.trim());
+        setMessageToEdit(null);
+      } else {
+        await sendMessage(message.trim());
+        await markAsRead();
+      }
+
       setMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
@@ -28,6 +45,12 @@ export function MessageInput({ conversationId }: { conversationId: string }) {
       handleSend();
     }
   };
+
+  useEffect(() => {
+    if (messageToEdit) {
+      setMessage(messageToEdit.content);
+    }
+  }, [messageToEdit]);
 
   return (
     <div className="flex items-end gap-2 p-3 border-t bg-background">

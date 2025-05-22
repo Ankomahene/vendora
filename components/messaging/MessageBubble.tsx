@@ -16,6 +16,7 @@ interface MessageBubbleProps {
   isCurrentUser: boolean;
   senderName: string;
   senderAvatar?: string;
+  onEdit: (message: Message) => void;
 }
 
 export function MessageBubble({
@@ -23,6 +24,7 @@ export function MessageBubble({
   isCurrentUser,
   senderName,
   senderAvatar,
+  onEdit,
 }: MessageBubbleProps) {
   const queryClient = useQueryClient();
 
@@ -48,6 +50,10 @@ export function MessageBubble({
       console.error('Failed to delete message:', error);
       toast.error('Failed to delete message. Please try again.');
     }
+  };
+
+  const handleEdit = () => {
+    onEdit(message);
   };
 
   return (
@@ -89,6 +95,11 @@ export function MessageBubble({
 
             <span className="text-xs text-muted-foreground mt-1">
               {timestamp}
+              {message.edited && (
+                <span className="ml-1 text-xs text-muted-foreground opacity-75">
+                  · edited
+                </span>
+              )}
               {isCurrentUser && message.read && (
                 <span className="ml-1 text-primary">✓</span>
               )}
@@ -98,7 +109,13 @@ export function MessageBubble({
         {isCurrentUser && (
           <ContextMenuContent>
             <ContextMenuItem
-              className="text-destructive focus:text-destructive"
+              className="focus:bg-primary/10"
+              onClick={() => handleEdit()}
+            >
+              Edit Message
+            </ContextMenuItem>
+            <ContextMenuItem
+              className="text-destructive focus:text-destructive focus:bg-primary/10"
               onClick={handleDelete}
             >
               Delete Message

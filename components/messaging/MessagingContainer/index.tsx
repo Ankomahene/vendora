@@ -29,11 +29,13 @@ export function MessagingContainer({
 }: MessagingWindowProps) {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const {
-    setInitialConversations,
     activeConversationId,
     unreadMessagesCount,
+    messageToEdit,
+    setInitialConversations,
     setUnreadMessagesCount,
     moveConversationToTop,
+    setMessageToEdit,
   } = useMessagingContext();
   //
   useEffect(() => {
@@ -118,7 +120,11 @@ export function MessagingContainer({
         <MessageList />
 
         {activeConversationId && (
-          <MessageInput conversationId={activeConversationId} />
+          <MessageInput
+            conversationId={activeConversationId}
+            messageToEdit={messageToEdit}
+            setMessageToEdit={setMessageToEdit}
+          />
         )}
       </div>
     </div>
