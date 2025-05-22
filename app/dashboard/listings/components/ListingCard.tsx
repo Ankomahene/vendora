@@ -137,7 +137,7 @@ export function ListingCard({ listing }: ListingCardProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/listings/${listing.id}`} target="_blank">
+                <Link href={`/products/${listing.id}`} target="_blank">
                   <Eye className="h-4 w-4 mr-2" />
                   View Public Listing
                 </Link>

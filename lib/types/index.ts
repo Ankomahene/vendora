@@ -109,3 +109,26 @@ export interface DashboardStats {
   totalMessages: number;
   pendingReviews: number;
 }
+
+export interface Product {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  original_price?: number;
+  discount_percentage?: number;
+  images: string[];
+  seller_id: string;
+  category_id: string;
+  status: 'active' | 'inactive' | 'pending';
+  specifications?: Record<string, string>;
+  tags?: string[];
+  created_at: string;
+  updated_at: string;
+  location?: Location;
+  service_modes?: ServiceMode[];
+  categories?: {
+    id: string;
+    name: string;
+  };
+}

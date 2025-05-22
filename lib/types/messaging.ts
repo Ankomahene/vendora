@@ -1,3 +1,5 @@
+import { Listing } from '@/app/dashboard/listings/types';
+
 export interface Conversation {
   id: string;
   buyer_id: string;
@@ -5,6 +7,27 @@ export interface Conversation {
   listing_id?: string; // optional context
   last_message_at: string;
   created_at: string;
+}
+
+export interface ConversationResponse {
+  id: string;
+  buyer_id: string;
+  seller_id: string;
+  listing_id?: string;
+  last_message_at: string;
+  created_at: string;
+  product: Listing;
+  seller: {
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+    business_name?: string;
+  };
+  buyer: {
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+  };
 }
 
 export interface Message {

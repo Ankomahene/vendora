@@ -1,35 +1,23 @@
 import React, { useState, KeyboardEvent } from 'react';
-import { Button } from '../ui/button';
-import { Textarea } from '../ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
+import { useConversationMessages } from '@/lib/hooks';
 
-interface MessageInputProps {
-  onSendMessage: (message: string) => Promise<boolean>;
-  disabled?: boolean;
-  placeholder?: string;
-}
-
-export function MessageInput({
-  onSendMessage,
-  disabled = false,
-  placeholder = 'Type a message...',
-}: MessageInputProps) {
+export function MessageInput({ conversationId }: { conversationId: string }) {
   const [message, setMessage] = useState('');
-  const [isSending, setIsSending] = useState(false);
+  const { sendMessage, isSending } = useConversationMessages({
+    conversationId,
+  });
 
   const handleSend = async () => {
-    if (!message.trim() || disabled || isSending) return;
+    if (!message.trim() || isSending) return;
 
-    setIsSending(true);
     try {
-      const success = await onSendMessage(message.trim());
-      if (success) {
-        setMessage('');
-      }
+      await sendMessage(message.trim());
+      setMessage('');
     } catch (error) {
-      console.error('Failed to send message:', error);
-    } finally {
-      setIsSending(false);
+      console.error('Error sending message:', error);
     }
   };
 
@@ -47,14 +35,14 @@ export function MessageInput({
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        disabled={disabled || isSending}
+        placeholder="Type a message..."
+        disabled={isSending || !conversationId}
         className="min-h-[60px] flex-1 resize-none"
       />
       <Button
         type="button"
         onClick={handleSend}
-        disabled={!message.trim() || disabled || isSending}
+        disabled={!message.trim() || isSending || !conversationId}
         size="icon"
         className="h-10 w-10 rounded-full shrink-0"
       >

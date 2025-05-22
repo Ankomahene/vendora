@@ -1,8 +1,10 @@
-import { createClient } from '@/lib/supabase/server';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { createClient } from '@/lib/supabase/server';
 import { ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { CategoryProducts } from './components/CategoryProducts';
+import { CategorySellers } from './components/CategorySellers';
 
 interface CategoryPageProps {
   params: Promise<{
@@ -40,6 +42,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const { id } = await params;
   const supabase = await createClient();
 
+  // Fetch category details
   const { data: category } = await supabase
     .from('categories')
     .select('*')
@@ -49,6 +52,21 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   if (!category) {
     notFound();
   }
+
+  // Fetch sellers in this category
+  const { data: sellers } = await supabase
+    .from('profiles')
+    .select('*, seller_details')
+    .eq('role', 'seller')
+    .eq('seller_status', 'approved')
+    .eq('seller_details->>business_category', category.id);
+
+  // Fetch products in this category
+  const { data: products } = await supabase
+    .from('listings')
+    .select('*')
+    .eq('category', id)
+    .eq('is_active', true);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -61,7 +79,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-zinc-800 rounded-xl p-8 mb-8">
+      <div className="bg-card dark:bg-zinc-800 rounded-xl p-8 mb-8">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           {category.image ? (
             <img
@@ -88,12 +106,17 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         </div>
       </div>
 
-      <div className="text-center py-12">
-        <h2 className="text-xl font-medium mb-2">Products Coming Soon</h2>
-        <p className="text-muted-foreground">
-          We&apos;re working on adding products to this category. Check back
-          soon!
-        </p>
+      <div>
+        <p className="text-2xl font-bold">Products</p>
+        <CategoryProducts
+          products={products || []}
+          categoryName={category.name}
+        />
+      </div>
+
+      <div className="mt-8">
+        <p className="text-2xl font-bold">Sellers</p>
+        <CategorySellers sellers={sellers || []} categoryName={category.name} />
       </div>
     </div>
   );

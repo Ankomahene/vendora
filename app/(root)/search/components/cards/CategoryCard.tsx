@@ -1,10 +1,9 @@
 'use client';
 
-import { Category } from '@/lib/types/category';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
+import { Category } from '@/lib/types/category';
 import { Layers } from 'lucide-react';
+import Link from 'next/link';
 
 interface CategoryCardProps {
   category: Category;
@@ -16,6 +15,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
       <Card className="overflow-hidden hover:shadow-md transition-shadow h-full cursor-pointer">
         <CardContent className="p-6 flex flex-col items-center text-center">
           {category.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={category.image}
               alt={category.name}
@@ -34,11 +34,6 @@ export function CategoryCard({ category }: CategoryCardProps) {
               {category.description}
             </p>
           )}
-
-          <Badge variant="secondary" className="mt-auto">
-            {/* This would dynamically show the count of services in this category */}
-            {category.businessCount || 0} businesses
-          </Badge>
         </CardContent>
       </Card>
     </Link>

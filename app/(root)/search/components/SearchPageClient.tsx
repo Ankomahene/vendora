@@ -13,8 +13,6 @@ import { SearchResults } from './SearchResults';
 export function SearchPageClient({ location }: { location: Location | null }) {
   const { results, params, isLoading } = useSearch();
 
-  console.log(results);
-
   const { updateUrlSearchParams } = useUrlSearchParams();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 

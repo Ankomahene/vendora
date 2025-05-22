@@ -1,10 +1,11 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { LocateFixed, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Location } from '@/lib/types';
+import { useGetDirections } from '@/lib/hooks';
 
 // Use a sample implementation that would be replaced with Mapbox in production
 export function MapPreview({
@@ -21,6 +22,7 @@ export function MapPreview({
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const { getDirections } = useGetDirections();
 
   useEffect(() => {
     // Simulated map loading
@@ -53,8 +55,8 @@ export function MapPreview({
     background.style.left = '0';
     background.style.width = '100%';
     background.style.height = '100%';
-    background.style.background =
-      'linear-gradient(to right, #e6e9f0 0%, #d8e2f3 100%)';
+    background.className =
+      'bg-gradient-to-r from-[#e6e9f0] to-[#d8e2f3] dark:from-zinc-700 dark:to-zinc-800';
     mapContainer.appendChild(background);
 
     // Add grid lines to simulate map grid
@@ -102,13 +104,13 @@ export function MapPreview({
     labelContainer.style.top = '50%';
     labelContainer.style.left = '50%';
     labelContainer.style.transform = 'translate(-50%, 20px)';
-    labelContainer.style.background = 'white';
+    labelContainer.className = 'bg-white dark:bg-zinc-900';
     labelContainer.style.padding = '8px 12px';
     labelContainer.style.borderRadius = '6px';
     labelContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
     labelContainer.style.textAlign = 'center';
     labelContainer.style.width = 'max-content';
-    labelContainer.style.maxWidth = '200px';
+    labelContainer.style.maxWidth = '300px';
     labelContainer.style.zIndex = '10';
 
     // Add location name if available
@@ -116,7 +118,7 @@ export function MapPreview({
       const nameElement = document.createElement('div');
       nameElement.style.fontWeight = '500';
       nameElement.style.fontSize = '14px';
-      nameElement.style.color = '#1f2937';
+      nameElement.className = 'text-gray-900 dark:text-gray-100';
       nameElement.textContent = location.name;
       labelContainer.appendChild(nameElement);
     }
@@ -124,7 +126,7 @@ export function MapPreview({
     // Add address
     const addressElement = document.createElement('div');
     addressElement.style.fontSize = '12px';
-    addressElement.style.color = '#6b7280';
+    addressElement.className = 'text-gray-500 dark:text-gray-400';
     addressElement.style.marginTop = location.name ? '4px' : '0';
     addressElement.textContent = location.address || '';
     labelContainer.appendChild(addressElement);
@@ -165,16 +167,7 @@ export function MapPreview({
       // Cleanup animation
       document.head.removeChild(style);
     };
-  }, [mapLoaded]);
-
-  const handleGetDirections = () => {
-    if (typeof window !== 'undefined') {
-      window.open(
-        `https://www.google.com/maps/search/?api=1&query=${location.lat},${location.lng}`,
-        '_blank'
-      );
-    }
-  };
+  }, [location.address, location.name, mapLoaded]);
 
   return (
     <Card className="overflow-hidden">
@@ -206,7 +199,7 @@ export function MapPreview({
 
           {isInteractive && (
             <Button
-              onClick={handleGetDirections}
+              onClick={() => getDirections(location)}
               variant="outline"
               className="w-full text-primary border-primary hover:bg-primary/10 dark:text-primary dark:border-primary dark:hover:bg-primary/20"
             >

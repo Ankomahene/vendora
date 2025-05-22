@@ -3,6 +3,7 @@ import {
   Conversation,
   Message,
   ConversationWithParticipants,
+  ConversationResponse,
 } from '@/lib/types/messaging';
 
 // Create a new conversation
@@ -46,6 +47,40 @@ export async function createConversation(
   return data as Conversation;
 }
 
+// Get all user conversations
+export async function getAllUserConversations(
+  userId: string
+): Promise<ConversationResponse[]> {
+  const supabase = createClient();
+
+  const { data: conversations, error } = await supabase
+    .from('conversations')
+    .select(
+      `*,
+        product:listing_id(title, price, images), 
+        messages(*), 
+        seller:seller_id(full_name, avatar_url), 
+        buyer:buyer_id(full_name, avatar_url)
+      `
+    )
+    .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
+    .order('last_message_at', { ascending: false })
+    .overrideTypes<ConversationResponse[], { merge: false }>();
+
+  console.log('conversations', conversations);
+
+  if (error) {
+    console.error('Error fetching conversations:', error);
+    return [];
+  }
+
+  if (!conversations || conversations.length === 0) {
+    return [];
+  }
+
+  return conversations;
+}
+
 // Get conversations for a user
 export async function getUserConversations(
   userId: string
@@ -57,9 +92,7 @@ export async function getUserConversations(
   const { data: conversations, error } = await supabase
     .from('conversations')
     .select(
-      `
-      *,
-      listing:listing_id(id, title, images)
+      `*, listing: listing_id(id, title, images)
     `
     )
     .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
@@ -226,6 +259,38 @@ export async function getConversationMessages(conversationId: string) {
   return data as Message[];
 }
 
+interface UnreadMessageCount {
+  conversation_id: string;
+  count: number;
+}
+
+export async function getUserUnreadMessagesCount(
+  conversationIds: string[],
+  currentUserId: string
+): Promise<{ [key: string]: number }> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.rpc('get_unread_message_counts', {
+    conversation_ids: conversationIds,
+    current_user_id: currentUserId,
+  });
+
+  if (error) {
+    console.error('Error fetching unread message counts:', error);
+    return {};
+  }
+
+  const unreadMessagesCountMap: { [key: string]: number } = data.reduce(
+    (acc: { [key: string]: number }, curr: UnreadMessageCount) => ({
+      ...acc,
+      [curr.conversation_id]: curr.count,
+    }),
+    {}
+  );
+
+  return unreadMessagesCountMap;
+}
+
 // Send a new message
 export async function sendMessage(
   conversationId: string,
@@ -276,18 +341,17 @@ export async function markMessagesAsRead(
     .from('messages')
     .update({ read: true })
     .eq('conversation_id', conversationId)
-    .neq('sender_id', userId);
+    .neq('sender_id', userId)
+    .eq('read', false);
 
   if (error) {
     console.error('Error marking messages as read:', error);
-    return false;
+    throw new Error('Error marking messages as read');
   }
-
-  return true;
 }
 
 // Subscribe to new messages in a conversation
-export function subscribeToMessages(
+export function subscribeToConversationMessages(
   conversationId: string,
   callback: (message: Message) => void
 ) {
@@ -298,13 +362,52 @@ export function subscribeToMessages(
     .on(
       'postgres_changes',
       {
-        event: 'INSERT',
+        event: '*',
         schema: 'public',
         table: 'messages',
         filter: `conversation_id=eq.${conversationId}`,
       },
-      (payload: { new: Message }) => {
-        callback(payload.new);
+      (payload) => callback(payload.new as Message)
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(subscription);
+  };
+}
+
+export function subscribeToMultipleConversations(
+  conversationIds: string[],
+  callback: (message: Message) => void
+) {
+  const supabase = createClient();
+
+  const subscription = supabase
+    .channel(`messages:${conversationIds.join('-')}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=in.(${conversationIds.join(',')})`,
+      },
+      (payload) => {
+        console.log('insert payload', payload);
+        return callback(payload.new as Message);
+      }
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=in.(${conversationIds.join(',')})`,
+      },
+      (payload) => {
+        console.log('update payload', payload);
+        return callback(payload.new as Message);
       }
     )
     .subscribe();

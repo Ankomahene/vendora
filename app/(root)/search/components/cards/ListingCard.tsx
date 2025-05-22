@@ -76,7 +76,7 @@ export function ListingCard({ listing }: ListingCardProps) {
 
       <CardFooter className="px-4 py-3 border-t bg-zinc-50 dark:bg-zinc-800/50 dark:border-zinc-800">
         <Link
-          href={`/listings/${listing.id}`}
+          href={`/products/${listing.id}`}
           className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-primary dark:hover:text-primary transition-colors w-full text-center"
         >
           View Details

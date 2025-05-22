@@ -28,13 +28,13 @@ export function Header() {
 
   const navLinks = (
     <nav className="hidden md:flex items-center space-x-6">
-      <NavLink href="/products" isScrolled={isScrolled}>
+      <NavLink href="/search?type=listings" isScrolled={isScrolled}>
         Products
       </NavLink>
-      <NavLink href="/categories" isScrolled={isScrolled}>
+      <NavLink href="search?type=categories" isScrolled={isScrolled}>
         Categories
       </NavLink>
-      <NavLink href="/sellers" isScrolled={isScrolled}>
+      <NavLink href="search?type=sellers" isScrolled={isScrolled}>
         Sellers
       </NavLink>
     </nav>
