@@ -14,6 +14,8 @@ import {
   subscribeToMultipleConversationsMessages,
   subscribeToUserConversations,
 } from '@/lib/messaging';
+import { REALTIME_POSTGRES_CHANGES_LISTEN_EVENT } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
 interface MessagingWindowProps {
   conversations: ConversationResponse[];
   currentUserId: string;
@@ -37,6 +39,7 @@ export function MessagingContainer({
     moveConversationToTop,
     setMessageToEdit,
   } = useMessagingContext();
+  const router = useRouter();
   //
   useEffect(() => {
     setInitialConversations(conversations);
@@ -57,8 +60,13 @@ export function MessagingContainer({
   useEffect(() => {
     const unsubscribe = subscribeToUserConversations(
       currentUserId,
-      (conversation) => {
-        moveConversationToTop(conversation.id);
+      (eventType, conversation) => {
+        if (eventType === REALTIME_POSTGRES_CHANGES_LISTEN_EVENT.UPDATE) {
+          moveConversationToTop(conversation.id);
+        }
+        if (eventType === REALTIME_POSTGRES_CHANGES_LISTEN_EVENT.INSERT) {
+          router.refresh();
+        }
       }
     );
 

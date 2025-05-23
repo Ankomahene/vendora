@@ -23,7 +23,7 @@ export default async function MessagesPage() {
     .select(
       `*,
         product:listing_id(title, price, images), 
-        seller:seller_id(id, full_name, avatar_url, seller_details->business_name), 
+        seller:seller_id(id, full_name, avatar_url, seller_details->business_name, seller_details->images), 
         buyer:buyer_id(id, full_name, avatar_url)
       `
     )

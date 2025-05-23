@@ -81,11 +81,6 @@ export function MessageList() {
     );
   }
 
-  const otherUser =
-    user?.id === activeConversation.buyer_id
-      ? activeConversation.seller
-      : activeConversation.buyer;
-
   return (
     <div className="flex-1 p-4 overflow-y-auto">
       {messages.map((message) => {
@@ -95,8 +90,17 @@ export function MessageList() {
             key={message.id}
             message={message}
             isCurrentUser={isCurrentUser}
-            senderName={isCurrentUser ? 'You' : otherUser.full_name}
-            senderAvatar={isCurrentUser ? undefined : otherUser.avatar_url}
+            senderName={
+              message.sender_id === activeConversation.buyer_id
+                ? activeConversation.buyer.full_name
+                : activeConversation.seller.business_name ||
+                  activeConversation.seller.full_name
+            }
+            senderAvatar={
+              message.sender_id === activeConversation.buyer_id
+                ? activeConversation.buyer.avatar_url
+                : activeConversation.seller.images?.[0]
+            }
             onEdit={handleEdit}
           />
         );

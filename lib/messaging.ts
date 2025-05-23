@@ -387,7 +387,10 @@ export function subscribeToMultipleConversationsMessages(
 // Subscribe to conversation updates for a user
 export function subscribeToUserConversations(
   userId: string,
-  callback: (conversation: Conversation) => void
+  callback: (
+    eventType: REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
+    conversation: Conversation
+  ) => void
 ) {
   const supabase = createClient();
 
@@ -402,7 +405,11 @@ export function subscribeToUserConversations(
         table: 'conversations',
         // filter: `or(buyer_id=eq.${userId},seller_id=eq.${userId})`, // Listen to conversations where the user is a buyer or seller
       },
-      (payload) => callback(payload.new as Conversation)
+      (payload) =>
+        callback(
+          payload.eventType as REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
+          payload.new as Conversation
+        )
     )
     .on(
       'postgres_changes',
@@ -412,7 +419,11 @@ export function subscribeToUserConversations(
         table: 'conversations',
         // filter: `or(buyer_id=eq.${userId},seller_id=eq.${userId})`, // Listen to conversations where the user is a buyer or seller
       },
-      (payload) => callback(payload.new as Conversation)
+      (payload) =>
+        callback(
+          payload.eventType as REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
+          payload.new as Conversation
+        )
     )
     .subscribe();
 

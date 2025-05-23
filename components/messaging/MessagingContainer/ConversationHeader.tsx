@@ -20,11 +20,15 @@ export const ConversationHeader = ({
   const isBuyer = activeConversation?.buyer.id === user?.id;
 
   const userFullName = isBuyer
-    ? activeConversation?.product.title
+    ? activeConversation?.product
+      ? activeConversation?.product.title
+      : activeConversation?.seller.business_name
     : activeConversation?.buyer.full_name;
 
   const userAvatar = isBuyer
-    ? activeConversation?.product.images[0]
+    ? activeConversation?.product
+      ? activeConversation?.product.images[0]
+      : activeConversation?.seller.avatar_url
     : activeConversation?.buyer.avatar_url;
 
   const listingTitle = isBuyer
@@ -63,7 +67,7 @@ export const ConversationHeader = ({
       <div className="flex-1 min-w-0">
         <h3 className="font-medium truncate">{userFullName}</h3>
 
-        {listingTitle && (
+        {activeConversation?.listing_id && (
           <p className="text-xs text-muted-foreground truncate">
             re: {listingTitle}
           </p>

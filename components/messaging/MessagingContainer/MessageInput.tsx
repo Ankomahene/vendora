@@ -5,6 +5,7 @@ import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { useConversationMessages } from '@/lib/hooks';
 import { Message } from '@/lib/types/messaging';
 import { updateMessage } from '@/lib/messaging';
+import { X } from 'lucide-react';
 
 export function MessageInput({
   conversationId,
@@ -38,6 +39,11 @@ export function MessageInput({
     }
   };
 
+  const cancelEdit = () => {
+    setMessageToEdit(null);
+    setMessage('');
+  };
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     // Send on Enter (without shift)
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -54,14 +60,28 @@ export function MessageInput({
 
   return (
     <div className="flex items-end gap-2 p-3 border-t bg-background">
-      <Textarea
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Type a message..."
-        disabled={isSending || !conversationId}
-        className="min-h-[60px] flex-1 resize-none"
-      />
+      <div className="relative flex-1">
+        <Textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Type a message..."
+          disabled={isSending || !conversationId}
+          className="min-h-[60px] resize-none pr-10"
+        />
+        {messageToEdit && (
+          <Button
+            onClick={cancelEdit}
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-2 h-6 w-6 rounded-full hover:bg-muted/50"
+            title="Cancel edit"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Cancel edit</span>
+          </Button>
+        )}
+      </div>
       <Button
         type="button"
         onClick={handleSend}

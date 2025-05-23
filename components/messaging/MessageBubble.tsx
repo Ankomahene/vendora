@@ -31,6 +31,8 @@ export function MessageBubble({
   // Format timestamp
   const timestamp = format(new Date(message.sent_at), 'h:mm a');
 
+  console.log('isCurrentUser', isCurrentUser);
+
   // Get initials for avatar fallback
   const initials = senderName
     .split(' ')
@@ -109,7 +111,7 @@ export function MessageBubble({
         {isCurrentUser && (
           <ContextMenuContent>
             <ContextMenuItem
-              className="focus:bg-primary/10"
+              className="focus:bg-primary/10 dark:focus:text-white"
               onClick={() => handleEdit()}
             >
               Edit Message

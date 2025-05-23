@@ -23,27 +23,35 @@ export function ConversationItem({
   const isBuyer = buyer.id === user?.id;
 
   // Get buyer initials for avatar fallback
-  const userInitials = isBuyer
-    ? seller.full_name
-    : buyer.full_name
+  const name = isBuyer ? seller.business_name : buyer.full_name;
+
+  const userInitials = name
+    ? name
         .split(' ')
         .map((n) => n[0])
         .join('')
         .toUpperCase()
-        .substring(0, 2);
+        .substring(0, 2)
+    : '';
 
   return (
     <button
       onClick={onClick}
       className={cn(
-        'w-full flex items-start gap-3 p-3 hover:bg-primary/10 transition-colors',
+        'w-full flex items-center gap-3 p-3 hover:bg-primary/10 transition-colors',
         'border-b',
         isActive && 'bg-zinc-100 dark:bg-zinc-800 '
       )}
     >
       <Avatar>
         <AvatarImage
-          src={isBuyer ? product.images[0] : buyer.avatar_url}
+          src={
+            isBuyer
+              ? product
+                ? product.images[0]
+                : seller.avatar_url
+              : buyer.avatar_url
+          }
           alt="avatar"
         />
         <AvatarFallback className="bg-primary/10 text-primary">
@@ -58,7 +66,11 @@ export function ConversationItem({
             highlight && 'text-gray-900 dark:text-gray-100 font-medium'
           )}
         >
-          {isBuyer ? product.title : buyer.full_name}
+          {isBuyer
+            ? product
+              ? product.title
+              : seller.business_name
+            : buyer.full_name}
         </p>
 
         {product && (

@@ -22,6 +22,7 @@ export interface ConversationResponse {
     full_name: string;
     avatar_url?: string;
     business_name?: string;
+    images?: string[];
   };
   buyer: {
     id: string;

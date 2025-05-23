@@ -11,6 +11,7 @@ interface MessagingContextType {
   messageToEdit: Message | null;
   setActiveConversationId: (id: string | null) => void;
   setInitialConversations: (conversations: ConversationResponse[]) => void;
+  addNewConversation: (conversation: ConversationResponse) => void;
   setUnreadMessagesCount: (unreadMessagesCount: {
     [key: string]: number;
   }) => void;
@@ -57,6 +58,13 @@ export const MessagingProvider = ({
     });
   };
 
+  const addNewConversation = (conversation: ConversationResponse) => {
+    setConversations((prevConversations) => [
+      conversation,
+      ...prevConversations,
+    ]);
+  };
+
   const activeConversation =
     activeConversationId && conversations.length > 0
       ? conversations.find((c) => c.id === activeConversationId)
@@ -73,6 +81,7 @@ export const MessagingProvider = ({
     moveConversationToTop,
     messageToEdit,
     setMessageToEdit,
+    addNewConversation,
   };
 
   return (
