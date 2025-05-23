@@ -1,54 +1,94 @@
 'use client';
-import { JSX, useState } from 'react';
-import { Search, MapPin, Sliders } from 'lucide-react';
+import { GoogleSearchBar } from '@/components/map';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Slider } from '@/components/ui/slider';
-import { categories } from '@/lib/constants';
-import Link from 'next/link';
+import { useCategories, useCurrentLocation } from '@/lib/hooks';
+import { useUrlSearchParams } from '@/lib/hooks/useUrlSearchParams';
+import { Location } from '@/lib/types';
+import { cn } from '@/lib/utils';
+import { SearchParams, SearchType, SortByType } from '@/services';
+import { ChevronDown, LocateIcon, Sliders } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { DistanceSlider } from './DistanceSlider';
+import { ProductTypeSelect } from './ProductTypeSelect';
+import { SelectType } from './SelectType';
+import { SortBySelect } from './SortBySelect';
 
 export function SearchPanel() {
-  const [distance, setDistance] = useState([5]);
+  const [searchType, setSearchType] = useState<SearchType>('sellers');
+  const [sortBy, setSortBy] = useState<SortByType>('relevance');
+  const [distance, setDistance] = useState(0);
   const [expanded, setExpanded] = useState(false);
+  const [location, setLocation] = useState<Location | null>(null);
+  const [productType, setProductType] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined
+  );
+  const {
+    location: currentLocation,
+    detectCurrentLocation,
+    isLoading: isDetectingLocation,
+    error,
+  } = useCurrentLocation();
+  const { data: categories, isLoading } = useCategories();
+  const { updateUrlSearchParams } = useUrlSearchParams();
+
+  const handleSearch = () => {
+    const searchParams: SearchParams = {
+      searchType,
+      category: selectedCategory,
+      location,
+      distance: location ? distance : 0,
+      sortBy,
+    };
+
+    updateUrlSearchParams(searchParams);
+  };
+
+  useEffect(() => {
+    if (currentLocation) {
+      setLocation(currentLocation);
+    }
+  }, [currentLocation]);
 
   return (
     <div className="w-full bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-4 md:p-6 mt-6">
       <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400"
-            size={18}
-          />
-          <Input
-            type="text"
-            placeholder="What are you looking for?"
-            className="pl-10 bg-zinc-50 dark:bg-zinc-700 border-zinc-200 dark:border-zinc-600"
-          />
-        </div>
+        <SelectType
+          searchType={searchType}
+          setSearchType={(searchTypeValue) =>
+            setSearchType(searchTypeValue as SearchType)
+          }
+        />
 
-        <div className="relative flex-1">
-          <MapPin
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400"
-            size={18}
+        <div className="relative flex-1 flex items-center gap-[2px]">
+          <GoogleSearchBar
+            location={location as Location | undefined}
+            onSearchResult={(result) => {
+              setLocation(result as unknown as Location);
+            }}
           />
-          <Input
-            type="text"
-            placeholder="Current location"
-            className="pl-10 bg-zinc-50 dark:bg-zinc-700 border-zinc-200 dark:border-zinc-600"
-            defaultValue="San Francisco, CA"
-          />
+          <Button
+            variant="outline"
+            className="w-8 h-10 rounded-sm p-1"
+            onClick={() => {
+              detectCurrentLocation();
+              if (!isDetectingLocation && !error) {
+                setSortBy('proximity');
+              }
+            }}
+            disabled={isDetectingLocation}
+            title="Select current location"
+          >
+            <LocateIcon
+              className={cn(isDetectingLocation ? 'animate-spin' : '')}
+            />
+          </Button>
         </div>
 
         <div className="flex gap-3">
@@ -61,102 +101,67 @@ export function SearchPanel() {
             </PopoverTrigger>
             <PopoverContent className="w-80 p-4">
               <div className="space-y-4">
-                <h4 className="font-medium text-sm text-zinc-900 dark:text-zinc-100">
-                  Distance
-                </h4>
-                <div className="space-y-2">
-                  <Slider
-                    defaultValue={[5]}
-                    max={50}
-                    step={1}
-                    value={distance}
-                    onValueChange={setDistance}
-                    className="z-10"
-                  />
-                  <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-400">
-                    <span>0 mi</span>
-                    <span>{distance[0]} miles</span>
-                    <span>50 mi</span>
-                  </div>
-                </div>
+                <DistanceSlider
+                  distance={distance}
+                  setDistance={setDistance}
+                  disabled={!location}
+                />
 
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm text-zinc-900 dark:text-zinc-100">
-                    Rating
-                  </h4>
-                  <Select defaultValue="any">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Any rating" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">Any rating</SelectItem>
-                      <SelectItem value="4plus">4+ stars</SelectItem>
-                      <SelectItem value="3plus">3+ stars</SelectItem>
-                      <SelectItem value="2plus">2+ stars</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <ProductTypeSelect
+                  productType={productType}
+                  setProductType={setProductType}
+                  searchType={searchType}
+                />
 
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm text-zinc-900 dark:text-zinc-100">
-                    Price range
-                  </h4>
-                  <Select defaultValue="any">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Any price" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">Any price</SelectItem>
-                      <SelectItem value="low">$ (Inexpensive)</SelectItem>
-                      <SelectItem value="medium">$$ (Moderate)</SelectItem>
-                      <SelectItem value="high">$$$ (Expensive)</SelectItem>
-                      <SelectItem value="luxury">$$$$ (Luxury)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button className="w-full bg-primary hover:bg-primary/80">
-                  Apply Filters
-                </Button>
+                <SortBySelect
+                  sortBy={sortBy}
+                  setSortBy={(sortByValue) =>
+                    setSortBy(sortByValue as SortByType)
+                  }
+                  searchType={searchType}
+                />
               </div>
             </PopoverContent>
           </Popover>
 
-          <Link href="/search">
-            <Button className="bg-primary hover:bg-primary/60">Search</Button>
-          </Link>
+          <Button
+            className="bg-primary hover:bg-primary/60"
+            onClick={handleSearch}
+          >
+            Search
+          </Button>
         </div>
       </div>
 
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="text-primary text-sm font-medium mt-4 flex items-center mx-auto md:mx-0"
-      >
-        {expanded ? 'Show less' : 'More categories'}
-        <svg
-          className={`ml-1 h-4 w-4 transform transition-transform ${
-            expanded ? 'rotate-180' : ''
-          }`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+      <div className="flex justify-between items-center mt-4 px-1">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-primary text-sm font-medium flex items-center mx-auto md:mx-0 gap-1"
+          disabled={isLoading}
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
+          {expanded ? 'Show less' : 'More categories'}
+          <ChevronDown size={16} />
+        </button>
+
+        {selectedCategory && expanded && (
+          <button
+            className="text-sm font-medium cursor-pointer mr-2"
+            onClick={() => setSelectedCategory(undefined)}
+          >
+            Clear selection
+          </button>
+        )}
+      </div>
 
       {expanded && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-          {categories.map((category) => (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 max-h-[250px] overflow-y-auto">
+          {categories?.map((category) => (
             <CategoryButton
               key={category.id}
               name={category.name}
-              icon={category.icon}
+              image={category.image || ''}
+              selected={category.id === selectedCategory}
+              setCategory={() => setSelectedCategory(category.id)}
             />
           ))}
         </div>
@@ -167,138 +172,30 @@ export function SearchPanel() {
 
 interface CategoryButtonProps {
   name: string;
-  icon: string;
+  image: string;
+  setCategory: () => void;
+  selected: boolean;
 }
 
-function CategoryButton({ name, icon }: CategoryButtonProps) {
-  // Map category icon names to Lucide icon components
-  const iconMap: Record<string, JSX.Element> = {
-    utensils: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 3h18v18H3z M16 15H8M12 15V3"
-        />
-      </svg>
-    ),
-    'shopping-bag': (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-        />
-      </svg>
-    ),
-    briefcase: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-        />
-      </svg>
-    ),
-    home: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 12l2-2m0 0l7-7 7 7m-7-7v14"
-        />
-      </svg>
-    ),
-    car: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 17a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0z M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10"
-        />
-      </svg>
-    ),
-    'heart-pulse': (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-        />
-      </svg>
-    ),
-    scissors: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"
-        />
-      </svg>
-    ),
-    film: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"
-        />
-      </svg>
-    ),
-  };
-
+function CategoryButton({
+  name,
+  image,
+  selected,
+  setCategory,
+}: CategoryButtonProps) {
   return (
-    <button className="flex items-center justify-center flex-col bg-zinc-50 dark:bg-zinc-700 hover:bg-orange-50 dark:hover:bg-zinc-600 rounded-lg p-3 transition-colors">
+    <button
+      className={cn(
+        'flex items-center justify-center flex-col bg-zinc-50 dark:bg-zinc-700 hover:bg-orange-50 dark:hover:bg-zinc-600 rounded-lg p-3 transition-colors',
+        selected && 'bg-orange-50 dark:bg-zinc-600 border border-orange-500'
+      )}
+      onClick={setCategory}
+    >
       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-        {iconMap[icon]}
+        <Avatar>
+          <AvatarImage src={image} />
+          <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+        </Avatar>
       </div>
       <span className="text-sm text-zinc-700 dark:text-zinc-300">{name}</span>
     </button>

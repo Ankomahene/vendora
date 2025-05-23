@@ -1,3 +1,5 @@
+'use client';
+
 import { CURRENCY } from '@/lib/constants';
 import {
   createConversation,
@@ -221,7 +223,7 @@ export function ContactSellerButton({
             className="flex gap-2"
           >
             <Input
-              value={messageToEdit ? messageToEdit.content : message}
+              value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Type a message..."
               className="flex-1"

@@ -3,10 +3,23 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Star } from 'lucide-react';
+import { Star, Edit2, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { User } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Review {
   id: string;
@@ -25,21 +38,78 @@ interface Review {
 interface ProductReviewsProps {
   reviews: Review[];
   averageRating: number;
+  productId: string;
+  user: User | null;
+  canReview: boolean;
 }
 
 export function ProductReviews({
   reviews,
   averageRating,
+  productId,
+  user,
+  canReview,
 }: ProductReviewsProps) {
   const [newRating, setNewRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Mock user state - in a real app, this would come from authentication
-  const user = { id: '1' };
+  const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
+  const router = useRouter();
+
+  // Check if the current user has already reviewed
+  const userReview = user
+    ? reviews.find((review) => review.user_id === user.id)
+    : null;
+  const isEditing = editingReview !== null;
 
   const handleRatingChange = (rating: number) => {
     setNewRating(rating);
+  };
+
+  const resetForm = () => {
+    setNewRating(0);
+    setComment('');
+    setEditingReview(null);
+  };
+
+  const handleEditClick = (review: Review) => {
+    setEditingReview(review);
+    setNewRating(review.rating);
+    setComment(review.comment);
+    document
+      .getElementById('write-review')
+      ?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleDeleteClick = (reviewId: string) => {
+    setReviewToDelete(reviewId);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!reviewToDelete) return;
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('product_reviews')
+        .delete()
+        .eq('id', reviewToDelete);
+
+      if (error) throw error;
+
+      toast.success('Review deleted successfully');
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to delete review');
+    } finally {
+      setShowDeleteDialog(false);
+      setReviewToDelete(null);
+    }
   };
 
   const handleSubmitReview = async () => {
@@ -61,19 +131,44 @@ export function ProductReviews({
     setIsSubmitting(true);
 
     try {
-      // In a real implementation, this would connect to a database
-      // For now, we'll just simulate success
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const supabase = createClient();
 
-      toast.success('Thank you for your feedback!');
+      if (isEditing) {
+        const { error } = await supabase
+          .from('product_reviews')
+          .update({
+            rating: newRating,
+            comment: comment.trim(),
+          })
+          .eq('id', editingReview.id);
 
-      // Reset form
-      setNewRating(0);
-      setComment('');
+        if (error) throw error;
+        toast.success('Review updated successfully');
+      } else {
+        const { error } = await supabase.from('product_reviews').insert({
+          product_id: productId,
+          user_id: user.id,
+          rating: newRating,
+          comment: comment.trim(),
+        });
 
-      // In a real implementation, we would refresh the reviews
-    } catch {
-      toast.error('Failed to submit review. Please try again.');
+        if (error) {
+          if (error.code === '23505') {
+            toast.error('You have already reviewed this product');
+            return;
+          }
+          throw error;
+        }
+        toast.success('Thank you for your feedback!');
+      }
+
+      resetForm();
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        isEditing ? 'Failed to update review' : 'Failed to submit review'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -109,7 +204,7 @@ export function ProductReviews({
             </div>
           </div>
 
-          {user && (
+          {user && canReview && !userReview && !isEditing && (
             <Button
               onClick={() =>
                 document
@@ -159,11 +254,32 @@ export function ProductReviews({
                       </div>
                     </div>
 
-                    <span className="text-sm text-muted-foreground mt-1 sm:mt-0">
-                      {formatDistanceToNow(new Date(review.created_at), {
-                        addSuffix: true,
-                      })}
-                    </span>
+                    <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                      <span className="text-sm text-muted-foreground">
+                        {formatDistanceToNow(new Date(review.created_at), {
+                          addSuffix: true,
+                        })}
+                      </span>
+
+                      {user && user.id === review.user_id && (
+                        <div className="flex gap-2 ml-4">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditClick(review)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteClick(review.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <p className="text-sm mt-2">{review.comment}</p>
@@ -181,10 +297,12 @@ export function ProductReviews({
         </div>
       )}
 
-      {/* Write a review form */}
-      {user && (
+      {/* Write/Edit review form */}
+      {user && (isEditing || !userReview) && canReview && (
         <div id="write-review" className="bg-card rounded-lg p-6 mt-8">
-          <h3 className="text-xl font-medium mb-4">Write a Review</h3>
+          <h3 className="text-xl font-medium mb-4">
+            {isEditing ? 'Edit Your Review' : 'Write a Review'}
+          </h3>
 
           <div className="mb-4">
             <p className="text-sm text-muted-foreground mb-2">Rating</p>
@@ -229,12 +347,23 @@ export function ProductReviews({
             />
           </div>
 
-          <Button
-            onClick={handleSubmitReview}
-            disabled={isSubmitting || newRating === 0 || !comment.trim()}
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit Review'}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSubmitReview}
+              disabled={isSubmitting || newRating === 0 || !comment.trim()}
+            >
+              {isSubmitting
+                ? 'Submitting...'
+                : isEditing
+                ? 'Update Review'
+                : 'Submit Review'}
+            </Button>
+            {isEditing && (
+              <Button variant="outline" onClick={resetForm}>
+                Cancel
+              </Button>
+            )}
+          </div>
         </div>
       )}
 
@@ -248,6 +377,25 @@ export function ProductReviews({
           </Button>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Review</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete your review? This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

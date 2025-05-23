@@ -1,3 +1,4 @@
+'use client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateUserProfile, getDashboardStats } from '@/services/profile';
 import { UserProfile } from '@/lib/types';

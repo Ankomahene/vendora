@@ -1,3 +1,5 @@
+'use client';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfileServices } from '@/lib/hooks';
 import { ConversationResponse } from '@/lib/types/messaging';

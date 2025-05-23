@@ -1,20 +1,20 @@
-import { createClient } from '@/lib/supabase/server';
+import { LocationWithDirections } from '@/components/LocationWithDirections';
+import { ContactSellerButton } from '@/components/messaging';
+import { ProductTags } from '@/components/ProductTags';
+import { ProductType } from '@/components/ProductType';
+import { ServiceModes } from '@/components/ServiceModes';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CURRENCY } from '@/lib/constants';
+import { createClient } from '@/lib/supabase/server';
+import { ChevronLeft, Star } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ChevronLeft, Star } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProductImages } from './components/ProductImages';
 import { ProductReviews } from './components/ProductReviews';
 import { ProductSpecifications } from './components/ProductSpecifications';
-import { ProductContactButton } from './components/ProductContactButton';
 import { RelatedProducts } from './components/RelatedProducts';
-import { ProductImages } from './components/ProductImages';
 import { SellerInfoCard } from './components/SellerInfoCard';
-import { CURRENCY } from '@/lib/constants';
-import { ProductType } from '@/components/ProductType';
-import { ProductTags } from '@/components/ProductTags';
-import { ServiceModes } from '@/components/ServiceModes';
-import { LocationWithDirections } from '@/components/LocationWithDirections';
 
 interface ProductPageProps {
   params: Promise<{
@@ -49,10 +49,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = await params;
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // get user profile
+  const { data: userProfile } = await supabase
+    .from('profiles')
+    .select('full_name, avatar_url')
+    .eq('id', user?.id)
+    .single();
+
   // Fetch product details
   const { data: product } = await supabase
     .from('listings')
-    .select('*, profiles(seller_details)')
+    .select('*, profile: profiles(seller_details)')
     .eq('id', id)
     .single();
 
@@ -75,7 +86,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   // Fetch product reviews
   const { data: reviews } = await supabase
     .from('product_reviews')
-    .select('*, profiles(*)')
+    .select('*, profiles(full_name, avatar_url)')
     .eq('product_id', id)
     .order('created_at', { ascending: false });
 
@@ -109,10 +120,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Link href="/products">
+        <Link href="/search?type=products">
           <Button variant="ghost" className="pl-0">
             <ChevronLeft className="h-4 w-4 mr-2" />
-            Back to Products
+            Back to all products
           </Button>
         </Link>
       </div>
@@ -207,17 +218,27 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           {/* Action buttons */}
           <div className="mb-8">
-            <ProductContactButton
-              // sellerId={product.seller_id}
-              // productId={product.id}
-              productTitle={product.title}
-            />
+            {user && user.id !== product.seller_id && (
+              <ContactSellerButton
+                buyerId={user?.id}
+                sellerId={product.seller_id}
+                listingId={id}
+                sellerName={product.profile.seller_details.name}
+                sellerAvatar={product.profile.seller_details.avatar}
+                buyerName={userProfile?.full_name}
+                buyerAvatar={userProfile?.avatar_url}
+                listingImage={product.images[0]}
+                listingName={product.title}
+                listingPrice={product.price.toFixed(2)}
+                fullWidth
+              />
+            )}
           </div>
 
           {/* Seller info card */}
           <div className="mb-6">
             <h3 className="text-base font-medium mb-3">Seller Information</h3>
-            <SellerInfoCard seller={product.profiles} />
+            <SellerInfoCard seller={product.profile} />
           </div>
         </div>
       </div>
@@ -236,8 +257,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <TabsContent value="reviews">
           <ProductReviews
             reviews={reviews || []}
-            // productId={id}
+            productId={id}
             averageRating={averageRating}
+            user={user || null}
+            canReview={user?.id !== product.seller_id}
           />
         </TabsContent>
       </Tabs>

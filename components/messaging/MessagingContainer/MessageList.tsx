@@ -1,3 +1,4 @@
+'use client';
 import { useProfileServices } from '@/lib/hooks';
 import { MessageSquare } from 'lucide-react';
 import { useEffect, useRef } from 'react';
