@@ -67,8 +67,6 @@ export async function getAllUserConversations(
     .order('last_message_at', { ascending: false })
     .overrideTypes<ConversationResponse[], { merge: false }>();
 
-  console.log('conversations', conversations);
-
   if (error) {
     console.error('Error fetching conversations:', error);
     return [];
@@ -296,7 +294,6 @@ export function subscribeToConversationMessages(
     message: Message
   ) => void
 ) {
-  console.log('subscribing to conversation messages', conversationId);
   const supabase = createClient();
 
   const subscription = supabase

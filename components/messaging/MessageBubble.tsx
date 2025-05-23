@@ -31,8 +31,6 @@ export function MessageBubble({
   // Format timestamp
   const timestamp = format(new Date(message.sent_at), 'h:mm a');
 
-  console.log('isCurrentUser', isCurrentUser);
-
   // Get initials for avatar fallback
   const initials = senderName
     .split(' ')

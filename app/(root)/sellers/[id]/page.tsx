@@ -78,8 +78,6 @@ export default async function SellerPage({ params }: SellerPageProps) {
     .eq('id', sellerDetails.business_category)
     .single();
 
-  console.log(category);
-
   const response = await getReadableAddress(
     sellerDetails.location.lng,
     sellerDetails.location.lat

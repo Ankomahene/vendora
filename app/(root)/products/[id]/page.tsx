@@ -88,8 +88,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
     .eq('is_active', true)
     .limit(4);
 
-  console.log('related products', relatedProducts, product.product_type);
-
   // Calculate average rating
   const averageRating = reviews?.length
     ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
