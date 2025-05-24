@@ -28,7 +28,8 @@ export function CategoryProducts({
   return (
     <div>
       <h2 className="text-md font-medium mb-6 text-muted-foreground">
-        {products.length} Products in {categoryName}
+        {products.length} {products.length > 1 ? 'Products' : 'Product'} in{' '}
+        {categoryName} category
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((product) => (

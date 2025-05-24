@@ -19,15 +19,19 @@ import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { MessageBubble } from './MessageBubble';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useProfileServices } from '@/lib/hooks';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import Link from 'next/link';
 
 interface ContactSellerButtonProps {
-  buyerId: string;
   sellerId: string;
   listingId?: string;
   sellerName: string;
   sellerAvatar?: string;
-  buyerName: string;
-  buyerAvatar?: string;
   listingImage?: string;
   listingName?: string;
   listingPrice?: string;
@@ -39,7 +43,6 @@ interface ContactSellerButtonProps {
 }
 
 export function ContactSellerButton({
-  buyerId,
   sellerId,
   listingId,
   listingImage,
@@ -47,8 +50,6 @@ export function ContactSellerButton({
   listingPrice,
   sellerName,
   sellerAvatar,
-  buyerName,
-  buyerAvatar,
   variant = 'default',
   size = 'default',
   className,
@@ -62,6 +63,12 @@ export function ContactSellerButton({
   const [messageToEdit, setMessageToEdit] = useState<Message | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const { user } = useProfileServices();
+  const buyerId = user?.id || '';
+  const buyerName = user?.full_name || '';
+  const buyerAvatar = user?.avatar_url || '';
+
+  console.log(sellerId, buyerId);
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -148,6 +155,39 @@ export function ContactSellerButton({
       console.error('Failed to send message:', error);
     }
   };
+
+  if (!user) {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant={variant}
+            size={size}
+            className={cn('cursor-pointer', fullWidth && 'w-full', className)}
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            {!iconOnly && 'Contact Seller'}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-64 p-4">
+          <div className="space-y-4">
+            <h4 className="font-medium text-sm">Sign in to contact seller</h4>
+            <p className="text-sm text-muted-foreground">
+              You need to be signed in to send sellers messages.
+            </p>
+            <div className="space-y-2">
+              <Button className="w-full" asChild>
+                <Link href="/auth/login">Sign In</Link>
+              </Button>
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/auth/signup">Sign Up</Link>
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
+  }
 
   if (showChat) {
     return (

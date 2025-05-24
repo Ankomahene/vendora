@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, MessageSquare, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from './ui/button';
@@ -85,14 +85,22 @@ export const UserMenu = () => {
             <Link
               href={
                 pathname.startsWith('/admin')
-                  ? '/admin/settings'
-                  : '/dashboard/settings'
+                  ? '/admin/messages'
+                  : '/dashboard/messages'
               }
             >
-              <User className="mr-2 h-4 w-4" />
-              <span>Settings</span>
+              <MessageSquare className="mr-2 h-4 w-4" />
+              <span>Messages</span>
             </Link>
           </DropdownMenuItem>
+          {pathname.startsWith('/admin') && (
+            <DropdownMenuItem asChild>
+              <Link href="/admin/settings">
+                <User className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </Link>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} disabled={signOut.isPending}>

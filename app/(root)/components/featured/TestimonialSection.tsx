@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { testimonials } from '@/lib/constants';
+import Image from 'next/image';
 
 export function TestimonialSection() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -55,10 +56,12 @@ export function TestimonialSection() {
                       <div className="flex flex-col md:flex-row md:items-center gap-6">
                         <div className="md:w-1/4">
                           <div className="h-20 w-20 md:h-24 md:w-24 rounded-full overflow-hidden border-4 border-white dark:border-zinc-700 shadow-md mx-auto md:mx-0">
-                            <img
+                            <Image
                               src={testimonial.avatar}
                               alt={testimonial.name}
-                              className="w-full h-full object-cover"
+                              width={96}
+                              height={96}
+                              className="object-cover"
                             />
                           </div>
                         </div>

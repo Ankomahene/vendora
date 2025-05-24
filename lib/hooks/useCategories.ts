@@ -1,24 +1,63 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
-import { Category } from '@/lib/types/category';
+import { EnhancedCategory } from '@/lib/types/category';
 import { toast } from 'sonner';
+
+type CategoryCount = {
+  category_id: string;
+  business_count: number;
+  listing_count: number;
+};
 
 export function useCategories() {
   const supabase = createClient();
 
-  return useQuery<Category[]>({
+  return useQuery<EnhancedCategory[]>({
     queryKey: ['categories'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
+      // Get both categories and counts in parallel
+      const [categoriesResponse, countsResponse] = await Promise.all([
+        supabase.from('categories').select('*'),
+        supabase.rpc('get_category_counts'),
+      ]);
 
-      if (error) {
-        throw new Error(error.message);
-      }
+      if (categoriesResponse.error)
+        throw new Error(categoriesResponse.error.message);
+      if (countsResponse.error) throw new Error(countsResponse.error.message);
 
-      return data || [];
+      const categories = categoriesResponse.data || [];
+      const counts = (countsResponse.data as CategoryCount[]) || [];
+
+      // Map and enhance categories with counts
+      const enhancedCategories = categories.map((category) => {
+        const categoryCount = counts.find(
+          (count) => count.category_id === category.id
+        );
+
+        return {
+          ...category,
+          businessCount: categoryCount?.business_count || 0,
+          listingCount: categoryCount?.listing_count || 0,
+        };
+      });
+
+      // Sort categories by total activity
+      return enhancedCategories.sort((a, b) => {
+        // Compare total counts
+        const aTotalCount = a.businessCount + a.listingCount;
+        const bTotalCount = b.businessCount + b.listingCount;
+        if (aTotalCount !== bTotalCount) {
+          return bTotalCount - aTotalCount; // Descending order
+        }
+
+        // If total counts are equal, compare business counts
+        if (a.businessCount !== b.businessCount) {
+          return b.businessCount - a.businessCount;
+        }
+
+        // If business counts are equal, compare listing counts
+        return b.listingCount - a.listingCount;
+      });
     },
   });
 }

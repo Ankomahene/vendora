@@ -16,13 +16,26 @@ export async function createConversation(
   const supabase = createClient();
 
   // Check if conversation already exists for this buyer-seller-listing combo
-  const { data: existingConversation } = await supabase
+  let query = supabase
     .from('conversations')
     .select('*')
     .eq('buyer_id', buyer_id)
-    .eq('seller_id', seller_id)
-    .eq(listing_id ? 'listing_id' : 'is_null', listing_id || true)
-    .maybeSingle();
+    .eq('seller_id', seller_id);
+
+  if (listing_id) {
+    query = query.eq('listing_id', listing_id);
+  }
+
+  const { data: existingConversation, error: existingConversationError } =
+    await query.maybeSingle();
+
+  if (existingConversationError) {
+    console.error(
+      'Error fetching existing conversation:',
+      existingConversationError
+    );
+    return null;
+  }
 
   if (existingConversation) {
     return existingConversation as Conversation;

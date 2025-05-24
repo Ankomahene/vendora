@@ -53,13 +53,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // get user profile
-  const { data: userProfile } = await supabase
-    .from('profiles')
-    .select('full_name, avatar_url')
-    .eq('id', user?.id)
-    .single();
-
   // Fetch product details
   const { data: product } = await supabase
     .from('listings')
@@ -220,13 +213,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="mb-8">
             {user && user.id !== product.seller_id && (
               <ContactSellerButton
-                buyerId={user?.id}
                 sellerId={product.seller_id}
                 listingId={id}
                 sellerName={product.profile.seller_details.name}
                 sellerAvatar={product.profile.seller_details.avatar}
-                buyerName={userProfile?.full_name}
-                buyerAvatar={userProfile?.avatar_url}
                 listingImage={product.images[0]}
                 listingName={product.title}
                 listingPrice={product.price.toFixed(2)}

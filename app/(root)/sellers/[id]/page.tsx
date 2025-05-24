@@ -1,15 +1,15 @@
-import { createClient } from '@/lib/supabase/server';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { SellerDetails, ServiceMode, Location } from '@/lib/types';
-import { ChevronLeft, Star, Phone } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPreview } from '@/app/dashboard/components/MapPreview';
+import { ContactSellerButton } from '@/components/messaging';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { createClient } from '@/lib/supabase/server';
+import { Location, SellerDetails, ServiceMode } from '@/lib/types';
 import { getReadableAddress } from '@/services/get-readable-address';
-import { SendMessageButton } from './components/SendMessageButton';
-import { ProductsList } from './components/ProductsList';
+import { ChevronLeft, Phone } from 'lucide-react';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { ImageSlider } from './components/ImageSlider';
+import { ProductsList } from './components/ProductsList';
 
 interface SellerPageProps {
   params: Promise<{
@@ -43,6 +43,10 @@ export async function generateMetadata({ params }: SellerPageProps) {
 export default async function SellerPage({ params }: SellerPageProps) {
   const { id } = await params;
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // Fetch seller details and their listings in a single query
   const { data, error } = await supabase
@@ -94,10 +98,13 @@ export default async function SellerPage({ params }: SellerPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Link href="/sellers">
-          <Button variant="ghost" className="pl-0">
+        <Link href="/search?type=sellers">
+          <Button
+            variant="ghost"
+            className="pl-0 hover:bg-transparent dark:hover:text-white cursor-pointer"
+          >
             <ChevronLeft className="h-4 w-4 mr-2" />
-            Back to Sellers
+            Back to all Businesses
           </Button>
         </Link>
       </div>
@@ -115,7 +122,7 @@ export default async function SellerPage({ params }: SellerPageProps) {
                 <h1 className="text-3xl font-bold">
                   {sellerDetails.business_name}
                 </h1>
-                <div className="flex items-center mt-2 text-amber-500">
+                {/* <div className="flex items-center mt-2 text-amber-500">
                   <Star className="fill-current h-5 w-5" />
                   <span className="ml-1 font-medium">
                     {profile.seller_rating || 'New'}{' '}
@@ -125,7 +132,7 @@ export default async function SellerPage({ params }: SellerPageProps) {
                       </span>
                     )}
                   </span>
-                </div>
+                </div> */}
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
                     {category?.name}
@@ -172,7 +179,14 @@ export default async function SellerPage({ params }: SellerPageProps) {
                   <span>{sellerDetails.contact_phone}</span>
                 </div>
                 <div className="mt-4">
-                  <SendMessageButton />
+                  {id !== user?.id && (
+                    <ContactSellerButton
+                      sellerId={id}
+                      sellerName={sellerDetails.business_name}
+                      sellerAvatar={sellerDetails.images[0]}
+                      fullWidth
+                    />
+                  )}
                 </div>
               </div>
             </div>

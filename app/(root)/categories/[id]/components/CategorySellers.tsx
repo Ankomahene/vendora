@@ -32,7 +32,8 @@ export function CategorySellers({
   return (
     <div>
       <h2 className="text-md font-medium mb-6 text-muted-foreground">
-        {sellers.length} Sellers in {categoryName}
+        {sellers.length} {sellers.length > 1 ? 'Businesses' : 'Business'} in{' '}
+        {categoryName} category
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {sellers.map((seller) => (

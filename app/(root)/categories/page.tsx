@@ -1,7 +1,12 @@
 import { CategoriesClient } from './components/CategoriesClient';
 import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
-import { Category } from '@/lib/types/category';
+
+type CategoryCount = {
+  category_id: string;
+  business_count: number;
+  listing_count: number;
+};
 
 export const metadata: Metadata = {
   title: 'Categories | Vendora',
@@ -10,49 +15,50 @@ export const metadata: Metadata = {
 };
 
 export default async function CategoriesPage() {
-  // Create server-side Supabase client
   const supabase = await createClient();
 
-  // Fetch all data in parallel
-  const [categoriesRes, sellerProfilesRes, listingsRes] = await Promise.all([
-    supabase.from('categories').select('*').order('name'),
-    supabase
-      .from('profiles')
-      .select('seller_details')
-      .eq('role', 'seller')
-      .not('seller_details', 'is', null),
-    supabase.from('listings').select('category'),
+  // Get categories with counts using RPC function
+  const [categoriesResponse, countsResponse] = await Promise.all([
+    supabase.from('categories').select('*'),
+    supabase.rpc('get_category_counts'),
   ]);
 
-  const categories = categoriesRes.data || [];
-  const sellerProfiles = sellerProfilesRes.data || [];
-  const listings = listingsRes.data || [];
+  if (categoriesResponse.error)
+    throw new Error(categoriesResponse.error.message);
+  if (countsResponse.error) throw new Error(countsResponse.error.message);
 
-  // Count businesses by category
-  const businessCounts: Record<string, number> = {};
-  sellerProfiles.forEach((profile) => {
-    const businessCategory = profile.seller_details?.business_category;
-    if (businessCategory) {
-      businessCounts[businessCategory] =
-        (businessCounts[businessCategory] || 0) + 1;
-    }
+  const categories = categoriesResponse.data || [];
+  const counts = (countsResponse.data as CategoryCount[]) || [];
+
+  // Map and enhance categories with count information
+  const enhancedCategories = categories.map((category) => {
+    const categoryCount = counts.find(
+      (count: CategoryCount) => count.category_id === category.id
+    );
+    return {
+      ...category,
+      businessCount: categoryCount?.business_count || 0,
+      listingCount: categoryCount?.listing_count || 0,
+    };
   });
 
-  // Count listings by category
-  const listingCounts: Record<string, number> = {};
-  listings.forEach((listing) => {
-    if (listing.category) {
-      listingCounts[listing.category] =
-        (listingCounts[listing.category] || 0) + 1;
+  // Sort categories by total activity
+  const sortedCategories = enhancedCategories.sort((a, b) => {
+    // Compare total counts
+    const aTotalCount = a.businessCount + a.listingCount;
+    const bTotalCount = b.businessCount + b.listingCount;
+    if (aTotalCount !== bTotalCount) {
+      return bTotalCount - aTotalCount; // Descending order
     }
+
+    // If total counts are equal, compare business counts
+    if (a.businessCount !== b.businessCount) {
+      return b.businessCount - a.businessCount;
+    }
+
+    // If business counts are equal, compare listing counts
+    return b.listingCount - a.listingCount;
   });
 
-  // Enhance categories with count information
-  const enhancedCategories = categories.map((category: Category) => ({
-    ...category,
-    businessCount: businessCounts[category.id] || 0,
-    listingCount: listingCounts[category.id] || 0,
-  }));
-
-  return <CategoriesClient categories={enhancedCategories} />;
+  return <CategoriesClient categories={sortedCategories} />;
 }

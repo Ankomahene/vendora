@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { CategoryProducts } from './components/CategoryProducts';
 import { CategorySellers } from './components/CategorySellers';
+import Image from 'next/image';
 
 interface CategoryPageProps {
   params: Promise<{
@@ -71,10 +72,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Link href="/categories">
+        <Link href="/search?type=categories">
           <Button variant="ghost" className="pl-0">
             <ChevronLeft className="h-4 w-4 mr-2" />
-            Back to Categories
+            Back to all Categories
           </Button>
         </Link>
       </div>
@@ -82,10 +83,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <div className="bg-card dark:bg-zinc-800 rounded-xl p-8 mb-8">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           {category.image ? (
-            <img
+            <Image
               src={category.image}
               alt={category.name}
-              className="w-32 h-32 object-contain"
+              width={128}
+              height={128}
+              className="object-contain"
             />
           ) : (
             <div className="w-32 h-32 bg-muted rounded-full flex items-center justify-center">
@@ -106,17 +109,17 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         </div>
       </div>
 
+      <div className="mt-8">
+        <p className="text-2xl font-bold">Businesses</p>
+        <CategorySellers sellers={sellers || []} categoryName={category.name} />
+      </div>
+
       <div>
         <p className="text-2xl font-bold">Products</p>
         <CategoryProducts
           products={products || []}
           categoryName={category.name}
         />
-      </div>
-
-      <div className="mt-8">
-        <p className="text-2xl font-bold">Sellers</p>
-        <CategorySellers sellers={sellers || []} categoryName={category.name} />
       </div>
     </div>
   );

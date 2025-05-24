@@ -1,8 +1,17 @@
-import { ArrowUpRight } from 'lucide-react';
-import { trendingCategories } from '@/lib/constants';
+'use client';
+import { useCategories } from '@/lib/hooks';
+import { EnhancedCategory } from '@/lib/types/category';
+import { ArrowUpRight, Map, Search, Star } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { JSX } from 'react';
 
 export function CategorySection() {
+  const { data: categories } = useCategories();
+  const trendingCategories = categories?.slice(0, 4);
+
+  if (!trendingCategories) return null;
+
   return (
     <section
       id="trending"
@@ -47,27 +56,21 @@ export function CategorySection() {
   );
 }
 
-interface Category {
-  id: number;
-  name: string;
-  count: number;
-  image: string;
-}
-
 interface CategoryCardProps {
-  category: Category;
+  category: EnhancedCategory;
 }
 
 function CategoryCard({ category }: CategoryCardProps) {
   return (
-    <a
-      href="#"
+    <Link
+      href={`/categories/${category.id}`}
       className="group relative block h-64 rounded-xl overflow-hidden"
     >
       <div className="absolute inset-0">
-        <img
-          src={category.image}
+        <Image
+          src={category.image || ''}
           alt={category.name}
+          fill
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 to-transparent"></div>
@@ -79,14 +82,16 @@ function CategoryCard({ category }: CategoryCardProps) {
             <h3 className="text-xl font-semibold text-white">
               {category.name}
             </h3>
-            <p className="text-zinc-300 text-sm">{category.count} listings</p>
+            <p className="text-zinc-300 text-sm">
+              {category.listingCount} listings
+            </p>
           </div>
           <div className="h-10 w-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white transform translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
             <ArrowUpRight size={20} />
           </div>
         </div>
       </div>
-    </a>
+    </Link>
   );
 }
 
@@ -98,51 +103,9 @@ interface FeatureBoxProps {
 
 function FeatureBox({ icon, title, description }: FeatureBoxProps) {
   const iconMap: Record<string, JSX.Element> = {
-    search: (
-      <svg
-        className="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-        />
-      </svg>
-    ),
-    map: (
-      <svg
-        className="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-        />
-      </svg>
-    ),
-    star: (
-      <svg
-        className="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-        />
-      </svg>
-    ),
+    search: <Search size={24} />,
+    map: <Map size={24} />,
+    star: <Star size={24} />,
   };
 
   return (
