@@ -101,8 +101,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const discountAmount = product.original_price
     ? product.original_price - product.price
     : product.discount_percentage
-    ? Math.round(product.price * (product.discount_percentage / 100))
-    : 0;
+      ? Math.round(product.price * (product.discount_percentage / 100))
+      : 0;
 
   const originalPrice =
     product.original_price ||
@@ -113,7 +113,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Link href="/search?type=products">
+        <Link href="/search?type=listings">
           <Button variant="ghost" className="pl-0">
             <ChevronLeft className="h-4 w-4 mr-2" />
             Back to all products
