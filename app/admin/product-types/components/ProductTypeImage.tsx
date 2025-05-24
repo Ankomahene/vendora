@@ -1,7 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { ProductType } from '@/lib/types/prouduct-type';
+import Image from 'next/image';
 
 interface ProductTypeImageProps {
   productType: ProductType;
@@ -23,10 +23,11 @@ export function ProductTypeImage({
   if (productType.image) {
     return (
       <div className={`${sizeClass} relative rounded-md overflow-hidden`}>
-        <img
+        <Image
           src={productType.image}
           alt={productType.name}
           className="object-cover h-full w-full"
+          fill
           onError={(e) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src = '/placeholder-image.svg';

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Check, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { updateSellerStatus } from '@/services/admin';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { useAdminServices } from '@/lib/hooks';
 
 interface SellerActionButtonsProps {
   sellerId: string;
@@ -24,12 +26,18 @@ export function SellerActionButtons({ sellerId }: SellerActionButtonsProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [action, setAction] = useState<'approve' | 'reject'>('approve');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const { updateSellerStatus } = useAdminServices();
 
   const handleAction = async () => {
     setIsUpdating(true);
     try {
       const status = action === 'approve' ? 'approved' : 'rejected';
-      const success = await updateSellerStatus(sellerId, status);
+      const success = await updateSellerStatus.mutateAsync({
+        userId: sellerId,
+        status,
+        rejectionReason,
+      });
 
       if (!success) {
         throw new Error(`Failed to ${action} seller`);
@@ -86,6 +94,16 @@ export function SellerActionButtons({ sellerId }: SellerActionButtonsProps) {
                 : 'This will reject the seller application. The seller will need to contact support to reapply.'}
             </DialogDescription>
           </DialogHeader>
+
+          <div className="my-2">
+            <Label>Rejection Reason</Label>
+            <Textarea
+              placeholder="Enter rejection reason"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="mb-4"
+            />
+          </div>
 
           <DialogFooter>
             <Button

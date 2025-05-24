@@ -3,6 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Category } from '@/lib/types/category';
 import { Layers } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 interface CategoryCardProps {
@@ -15,11 +16,12 @@ export function CategoryCard({ category }: CategoryCardProps) {
       <Card className="overflow-hidden hover:shadow-md transition-shadow h-full cursor-pointer">
         <CardContent className="p-6 flex flex-col items-center text-center">
           {category.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={category.image}
               alt={category.name}
-              className="w-16 h-16 mb-4 object-contain"
+              className="mb-4 object-contain"
+              width={64}
+              height={64}
             />
           ) : (
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">

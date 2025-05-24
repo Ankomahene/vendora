@@ -2,6 +2,7 @@ import { UserProfile, SellerDetails } from '@/lib/types';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Star } from 'lucide-react';
+import Image from 'next/image';
 
 interface CategorySellersProps {
   sellers: UserProfile[];
@@ -53,10 +54,12 @@ function SellerCard({ seller }: { seller: SellerWithRatings }) {
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
             {sellerDetails.images && sellerDetails.images.length > 0 ? (
-              <img
+              <Image
                 src={sellerDetails.images[0]}
                 alt={sellerDetails.business_name}
-                className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                className="rounded-full object-cover flex-shrink-0"
+                width={64}
+                height={64}
               />
             ) : (
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center flex-shrink-0">

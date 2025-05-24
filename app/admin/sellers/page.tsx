@@ -17,12 +17,13 @@ export const metadata = {
 };
 
 interface AdminSellersPageProps {
-  searchParams: { tab?: string };
+  searchParams: Promise<{ tab?: string }>;
 }
 
 export default async function AdminSellersPage({
   searchParams,
 }: AdminSellersPageProps) {
+  const { tab } = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -35,7 +36,7 @@ export default async function AdminSellersPage({
   }
 
   // Get the tab from search params or default to "pending"
-  const activeTab = searchParams.tab || 'pending';
+  const activeTab = tab || 'pending';
 
   // Get all sellers with pending status first
   const pendingSellers = await getAllSellers('pending');

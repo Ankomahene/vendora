@@ -1,6 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 /**
@@ -56,13 +57,13 @@ export const ImagePreviewModal = ({ src, onClose }: ImagePreviewModalProps) => {
 
         {/* Image container */}
         <div className="flex items-center justify-center w-full h-full p-4">
-          {/* Use direct img tag with the original URL (including token if present) */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={src}
             alt="Preview"
             className="max-w-full max-h-[80vh] object-contain rounded-md"
             style={{ display: isLoading ? 'none' : 'block' }}
+            width={1000}
+            height={1000}
           />
         </div>
       </div>

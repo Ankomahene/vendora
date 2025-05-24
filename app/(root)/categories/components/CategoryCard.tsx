@@ -1,9 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { EnhancedCategory } from './CategoriesClient';
+import Image from 'next/image';
 
 interface CategoryCardProps {
   category: EnhancedCategory;
@@ -17,10 +17,12 @@ export function CategoryCard({ category }: CategoryCardProps) {
     >
       <div className="p-6 flex flex-col items-center text-center">
         {category.image ? (
-          <img
+          <Image
             src={category.image}
             alt={category.name}
-            className="w-16 h-16 object-contain mb-4"
+            className="object-contain mb-4"
+            width={64}
+            height={64}
           />
         ) : (
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">

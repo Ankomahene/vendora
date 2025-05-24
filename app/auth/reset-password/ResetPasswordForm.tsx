@@ -12,12 +12,12 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormProvider,
 } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 
@@ -51,14 +51,14 @@ export default function ResetPasswordForm() {
   };
 
   return (
-    <Form {...form}>
+    <FormProvider form={form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid gap-4">
           <FormField
             control={form.control}
             name="email"
             render={({ field }) => (
-              <FormItem>
+              <FormItem name="email" formItemId="email">
                 <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input
@@ -80,6 +80,6 @@ export default function ResetPasswordForm() {
           </PrimaryButton>
         </div>
       </form>
-    </Form>
+    </FormProvider>
   );
 }

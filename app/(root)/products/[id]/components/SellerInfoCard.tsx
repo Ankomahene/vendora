@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useGetDirections } from '@/lib/hooks';
+import Image from 'next/image';
 
 interface SellerInfoCardProps {
   seller: {
@@ -42,11 +43,12 @@ export function SellerInfoCard({ seller }: SellerInfoCardProps) {
       <CardContent className="p-4 space-y-4">
         <div className="flex items-start gap-3">
           {seller.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={seller.avatar_url}
               alt={businessName || ''}
-              className="w-12 h-12 rounded-full mr-1 flex-shrink-0"
+              className="rounded-full mr-1 flex-shrink-0"
+              width={48}
+              height={48}
             />
           ) : (
             <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-1 flex-shrink-0">

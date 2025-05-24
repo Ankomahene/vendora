@@ -1,7 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { Category } from '@/lib/types/category';
+import Image from 'next/image';
 
 interface CategoryImageProps {
   category: Category;
@@ -20,10 +20,12 @@ export function CategoryImage({ category, size = 'sm' }: CategoryImageProps) {
   if (category.image) {
     return (
       <div className={`${sizeClass} relative rounded-md overflow-hidden`}>
-        <img
+        <Image
           src={category.image}
           alt={category.name}
           className="object-cover h-full w-full"
+          width={1000}
+          height={1000}
           onError={(e) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src = '/placeholder-image.svg';

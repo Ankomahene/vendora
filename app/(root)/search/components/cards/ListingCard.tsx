@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { Listing } from '@/app/dashboard/listings/types';
@@ -7,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { CURRENCY } from '@/lib/constants';
+import Image from 'next/image';
 
 interface ListingCardProps {
   listing: Listing;
@@ -17,10 +17,11 @@ export function ListingCard({ listing }: ListingCardProps) {
     <Card className="overflow-hidden flex flex-col hover:shadow-md transition-shadow h-full p-0">
       <div className="relative aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
         {listing.images && listing.images.length > 0 ? (
-          <img
+          <Image
             src={listing.images[0]}
             alt={listing.title}
-            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            fill
+            className="object-cover transition-transform duration-300 hover:scale-105"
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center bg-zinc-200 dark:bg-zinc-800">
@@ -67,8 +68,8 @@ export function ListingCard({ listing }: ListingCardProps) {
               {mode === 'home_service'
                 ? 'Home Service'
                 : mode === 'in_store'
-                ? 'In-store'
-                : 'Delivery'}
+                  ? 'In-store'
+                  : 'Delivery'}
             </Badge>
           ))}
         </div>

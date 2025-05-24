@@ -2,12 +2,12 @@
 
 import { PrimaryButton } from '@/components/PrimaryButton';
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormProvider,
 } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import {
@@ -51,14 +51,14 @@ export default function NewPasswordForm() {
   };
 
   return (
-    <Form {...form}>
+    <FormProvider form={form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid gap-4">
           <FormField
             control={form.control}
             name="password"
             render={({ field }) => (
-              <FormItem>
+              <FormItem name="password" formItemId="password">
                 <FormLabel>New Password</FormLabel>
                 <FormControl>
                   <Input
@@ -79,7 +79,7 @@ export default function NewPasswordForm() {
             control={form.control}
             name="confirmPassword"
             render={({ field }) => (
-              <FormItem>
+              <FormItem name="confirmPassword" formItemId="confirmPassword">
                 <FormLabel>Confirm Password</FormLabel>
                 <FormControl>
                   <Input
@@ -101,6 +101,6 @@ export default function NewPasswordForm() {
           </PrimaryButton>
         </div>
       </form>
-    </Form>
+    </FormProvider>
   );
 }

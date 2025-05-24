@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Star, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 interface SellerCardProps {
   seller: UserProfile;
@@ -26,10 +27,12 @@ export function SellerCard({ seller }: SellerCardProps) {
           {/* Business Image/Avatar */}
           <div className="md:w-60 h-40 md:h-full relative bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
             {sellerDetails.images && sellerDetails.images.length > 0 ? (
-              <img
+              <Image
                 src={sellerDetails.images[0]}
                 alt={sellerDetails.business_name}
                 className="w-full h-full object-cover"
+                width={1000}
+                height={1000}
               />
             ) : (
               <div className="flex items-center justify-center h-full w-full">
@@ -101,8 +104,8 @@ export function SellerCard({ seller }: SellerCardProps) {
                       {mode.type === 'home_service'
                         ? 'Home Service'
                         : mode.type === 'in_store'
-                        ? 'In-store'
-                        : 'Delivery'}
+                          ? 'In-store'
+                          : 'Delivery'}
                     </Badge>
                   )
               )}

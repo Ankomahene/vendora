@@ -9,10 +9,12 @@ export function useAdminServices() {
     mutationFn: ({
       userId,
       status,
+      rejectionReason,
     }: {
       userId: string;
       status: 'approved' | 'rejected';
-    }) => updateSellerStatus(userId, status),
+      rejectionReason: string;
+    }) => updateSellerStatus({ userId, status, rejectionReason }),
     onSuccess: () => {
       // Invalidate sellers list and specific seller data
       queryClient.invalidateQueries({ queryKey: ['sellers'] });

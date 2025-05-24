@@ -18,6 +18,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 import 'swiper/css/thumbs';
 import 'swiper/css/free-mode';
+import Image from 'next/image';
 
 interface ImageSliderProps {
   images: string[];
@@ -48,11 +49,11 @@ export function ImageSlider({ images, businessName }: ImageSliderProps) {
   if (images.length === 1) {
     return (
       <div className="w-full h-48 sm:h-56 md:h-64 rounded-lg overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element*/}
-        <img
+        <Image
           src={images[0]}
           alt={businessName}
           className="w-full h-full object-cover"
+          fill
         />
       </div>
     );
@@ -76,10 +77,12 @@ export function ImageSlider({ images, businessName }: ImageSliderProps) {
       >
         {images.map((image, index) => (
           <SwiperSlide key={index}>
-            <img
+            <Image
               src={image}
               alt={`${businessName} - Image ${index + 1}`}
-              className="w-full h-full object-cover"
+              className="object-cover"
+              width={1000}
+              height={1000}
             />
           </SwiperSlide>
         ))}
@@ -100,10 +103,12 @@ export function ImageSlider({ images, businessName }: ImageSliderProps) {
             {images.map((image, index) => (
               <SwiperSlide key={`thumb-${index}`} className="cursor-pointer">
                 <div className="h-16 sm:h-20 w-full rounded-md overflow-hidden">
-                  <img
+                  <Image
                     src={image}
                     alt={`${businessName} thumbnail ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    className="object-cover"
+                    width={1000}
+                    height={1000}
                   />
                 </div>
               </SwiperSlide>
